@@ -12,7 +12,7 @@
  * Plugin Name:       WebToffee WP Backup and Migration
  * Plugin URI:        https://wordpress.org/plugins/wp-migration-duplicator/
  * Description:       Migrate WordPress contents and database quickly with ease.
- * Version:           1.5.2
+ * Version:           1.5.3
  * Author:            WebToffee
  * Author URI:        https://www.webtoffee.com/
  * License:           GPL-2.0+
@@ -40,7 +40,7 @@ if(!defined('WP_MIGRATION_DUPLICATOR_VERSION')) //check plugin file already incl
     /**
      * Currently plugin version.
      */
-    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.5.2' );
+    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.5.3' );
 }
 if ( !defined( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT' ) ) {
 	define( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT', 'https://www.webtoffee.com/finding-php-error-logs-in-migrator-plugin/' );
@@ -108,6 +108,9 @@ function wt_wp_migration_duplicator_plugin_action_links_basic( $links ) {
     $plugin_links = array(
 		'<a href="' . admin_url( 'admin.php?page=wp-migration-duplicator' ) . '">' . __( 'Settings' ) . '</a>',
 		'<a href="https://www.webtoffee.com/wordpress-backup-migration-user-guide/" target="_blank">' . __( 'Documentation' ) . '</a>',
+                '<a href="https://wordpress.org/support/plugin/wp-migration-duplicator/" target="_blank">' . __('Support') . '</a>',
+                '<a href="https://www.webtoffee.com/plugins/" target="_blank"  style="color:#3db634;">' . __('Premium Plugins') . '</a>',
+                '<a target="_blank" style="color:#f909ff;" href="https://wordpress.org/support/plugin/wp-migration-duplicator/reviews#new-post">' . __('Review') . '</a>',
             );
 
 	if ( array_key_exists( 'deactivate', $links ) ) {

@@ -1,10 +1,11 @@
 === WebToffee WP Backup and Migration ===
 Contributors: webtoffee
-Tags:  WordPress migration, Backup and restore wordpress, Wordpress backup, Database restore, Cloud backup
+Donate link: https://www.webtoffee.com/plugins
+Tags:  wordpress migration, backup and restore wordpress, wordpress backup, database restore, cloud backup
 Requires at least: 3.3
-Tested up to: 6.6.1
+Tested up to: 6.7
 Requires PHP: 5.6
-Stable tag: 1.5.2
+Stable tag: 1.5.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -21,21 +22,13 @@ You can backup to cloud (Amazon S3, Google Drive) and external storage locations
 = WebToffee WP Backup and Migration Plugin - features =
 
 &#128312;  <strong>Ease of use:</strong> Migrate all your Wordpress data (media files, plugins, themes, and database) with minimal clicks.
-
 &#128312;  <strong>One-click backup and restore:</strong> Supports single-click backup and restore.
-
 &#128312;<strong> No data size limit for migration:</strong> Backup and restore WordPress site's of any size effortlessly.
-
 &#128312; <strong>Supports all hosts or operating system:</strong> There is no limitation on host and operating system for migration.
-
 &#128312;  <strong>Automated scheduled backups:</strong> Schedule backups on a daily/weekly/monthly basis.
-
 &#128312; <strong>Auto-replace website URLs:</strong> Supports auto-replace of URLs during restore. No longer need for search and replace!
-
 &#128312;  <strong>Multiple backup locations:</strong> Supports FTP/SFTP, Google Drive, Amazon S3, and local storage.
-
 &#128312;  <strong>Backup and migrate only selected data:</strong> You can choose what you need to migrate from your WordPress site. Supports database backup, backup of chosen files (plugins, themes, core files, uploads, etc.)
-
 &#128312; <strong>Supports both MySQL and MySQLi</strong>
 
 = Setup Guide - WordPress Migration & Backup =
@@ -58,7 +51,7 @@ Following are some of the common use cases you can handle using this plugin.
 * You need to restore WordPress after the site crashed
 * You need to do a WordPress restore to an earlier version
 
-= HOW  WORDPRESS BACKUP AND MIGRATOR PLUGIN WORKS =
+= HOW WORDPRESS BACKUP AND MIGRATOR PLUGIN WORKS =
 
 Migrating a WordPress site to anew domain or host consists of three parts – moving the files, moving the database, and reconfiguring (if needed). Our WordPress migration plugin automates this process.
 
@@ -124,6 +117,9 @@ Yes. You can migrate your WordPress site between any hosts with the plugin.
 14. Advanced options for restore
 
 == Changelog ==
+
+= 1.5.3  2024-11-15 =
+* Tested OK with WordPress 6.7
 
 = 1.5.2  2024-08-09 =
 * Tested OK with WordPress 6.6.1
@@ -289,5 +285,5 @@ Yes. You can migrate your WordPress site between any hosts with the plugin.
 
 == Upgrade notice ==
 
-= 1.5.2 =
-* Tested OK with WordPress 6.6.1
+= 1.5.3 =
+* Tested OK with WordPress 6.7
