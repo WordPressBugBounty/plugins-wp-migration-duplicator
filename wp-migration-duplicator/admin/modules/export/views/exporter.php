@@ -465,7 +465,7 @@ height: 20px;
                                     </tr>
                                 </tbody>
                             </table></div>
-                        <table><tr><td style ="width: 172px"><div style="margin-bottom: 105px; margin-left: 28px;font-size: 14px;"><label><?php esc_html_e('Export Content'); ?><label</label></div></td><td>
+                        <table><tr><td style ="width: 172px"><div style="margin-bottom: 105px; margin-left: 28px;font-size: 14px;"><label><?php esc_html_e('Export Content', 'wp-migration-duplicator'); ?><label</label></div></td><td>
                                     <div style="padding-left: 105px; " >
 
                                         <!--                                <label>

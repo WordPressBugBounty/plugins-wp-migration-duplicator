@@ -176,7 +176,7 @@ class Wp_Migration_Duplicator_Export
                 if(file_exists($file_name)){
                     unlink($file_name);
                 }
-                $log_file_name = Wp_Migration_Duplicator::$backup_dir . '/' . "path_details".$_POST['export_id'].".json";
+                $log_file_name = Wp_Migration_Duplicator::$backup_dir . '/' . "path_details".$_POST['export_id'].md5($backup_file_name).".json";
                 if(file_exists($log_file_name)){
                     unlink($log_file_name);
                 }
@@ -415,10 +415,10 @@ class Wp_Migration_Duplicator_Export
                      unset($target_tables_save);unset($db_import_help_data);
                 }
 		$this->export_id = Wp_Migration_Duplicator::create_log($data_arr);
-                if( file_exists(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json')){
-                      @unlink(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json');
+                if( file_exists(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json')){
+                      @unlink(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json');
                   }
-                $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json', "w");
+                $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json', "w");
                 if (is_resource($ffp)) {
                     fwrite($ffp, json_encode($dir_arrr));
                 }
@@ -471,8 +471,12 @@ class Wp_Migration_Duplicator_Export
                         Webtoffe_logger::write_log( 'Export','export_log error' );
 			return $out; //error
 		}
-                if(file_exists(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json')){
-                    $path_Array = json_decode(file_get_contents(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json'));
+                
+                $log_data = json_decode($export_log['log_data'], true);
+                $backup_file_name = $log_data['backup_file'];
+                
+                if(file_exists(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json')){
+                    $path_Array = json_decode(file_get_contents(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json'));
                 }else{
                     Webtoffe_logger::write_log( 'Export','Path file missing.' );
 		   return $out; //error
@@ -480,11 +484,11 @@ class Wp_Migration_Duplicator_Export
 
 		$offset = intval($_POST['offset']);
 		$limit = intval($_POST['limit']);
-		$log_data = json_decode($export_log['log_data'], true);
+
                 set_time_limit(0);
                 ini_set('max_execution_time', -1);
                 ini_set('memory_limit', -1);			
-                $backup_file_name = $log_data['backup_file'];
+
 		$backup_file = Wp_Migration_Duplicator::$backup_dir . '/' . $backup_file_name;
                 if ($offset == 0) { 
                          Webtoffe_logger::write_log( 'Export','Files and directories prepared for backup...' );
@@ -560,7 +564,7 @@ class Wp_Migration_Duplicator_Export
 			$database_directory = Wp_Migration_Duplicator::$database_dir;
 			if (file_exists($database_directory)) {
                                 @unlink(Wp_Migration_Duplicator::$database_dir."/webtofee_tables.json");
-                                @unlink(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json');
+                                @unlink(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json');
 				Wp_Migration_Duplicator::wt_mgt_delete_files($database_directory);                             
                                  Webtoffe_logger::write_log( 'Export', " Database backup directory removed sucessfully");
 			}
@@ -944,12 +948,13 @@ class Wp_Migration_Duplicator_Export
                     return $out; //error
 		}          
                 $log_data = json_decode($export_log['log_data'], true);
+                $backup_file_name = $log_data['backup_file'];
               if($log_data['export_type'] == 'db' || $log_data['export_type'] == 'files_and_db'){         
 
                     $file_name = "database.sql";
                    $database_directory = Wp_Migration_Duplicator::$database_dir;     
-                   if(file_exists(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json')){
-                       $paths_array = json_decode(file_get_contents(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json'), true);
+                   if(file_exists(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json')){
+                       $paths_array = json_decode(file_get_contents(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json'), true);
                    }else{
                        Webtoffe_logger::write_log( 'Export','Path file missing.' );
                       return $out; //error
@@ -967,8 +972,8 @@ class Wp_Migration_Duplicator_Export
                    }else{
                       Webtoffe_logger::write_log( 'Export','DB file missing.' ); 
                    }
-                    file_put_contents(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json', '');
-                   $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.'.json', "w");
+                    file_put_contents(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json', '');
+                   $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json', "w");
                    if (is_resource($ffp)) {
                        fwrite($ffp, json_encode($paths_array));
                    }else{

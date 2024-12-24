@@ -16,7 +16,7 @@ $wf_img_path=WT_MGDP_PLUGIN_URL.'images/';
 ?>
 <div class="wrap">
     <h2 class="wp-heading-inline">
-	<?php _e('WordPress Migrator','wp-migration-duplicator');?>
+	<?php esc_html_e('WordPress Migrator','wp-migration-duplicator');?>
 	</h2>
     <div class="nav-tab-wrapper wp-clearfix wt-mgdp-tab-head" style="background: white;margin: 16px 16px -2px 16px;border:none !important;box-shadow: 0px 2px 16px rgba(0, 0, 0, 0.1) !important;">
 		<?php

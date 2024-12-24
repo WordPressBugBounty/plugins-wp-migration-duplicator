@@ -16,7 +16,7 @@ $wf_img_path=WT_MGDP_PLUGIN_URL.'images/';
 ?>
 <div class="wrap">
     <h2 class="wp-heading-inline mgdp_plugin_head">
-	<?php _e('WebToffee WP Backup and Migration','wp-migration-duplicator');?>
+	<?php esc_html_e('WebToffee WP Backup and Migration','wp-migration-duplicator');?>
 	</h2>
     <div class="nav-tab-wrapper wp-clearfix wt-mgdp-tab-head " style="width:96%;border:none !important;box-shadow: 0px 2px 16px rgba(0, 0, 0, 0.1) !important;background-color: #fff;margin-left: 15px;margin-right: 15px" >
         <!--style="width:96%;border:none;margin-left: 16px;height: 50px ; border:none !important;box-shadow: 0px 2px 16px rgba(0, 0, 0, 0.1) !important;"-->
@@ -30,7 +30,7 @@ $wf_img_path=WT_MGDP_PLUGIN_URL.'images/';
 	    }
 	    Wp_Migration_Duplicator_Admin::generate_settings_tabhead($tab_head_arr);
 	    ?>
-        <!--<input style="text-align:center; float : right;margin-right: 22px; margin-top: 3px;" type="button" name="feedback-btn"  class="wt-button-red wt_sidebar_feedback" value="<?php _e('Report issue', 'wp-migration-duplicator') ?>">-->
+        <!--<input style="text-align:center; float : right;margin-right: 22px; margin-top: 3px;" type="button" name="feedback-btn"  class="wt-button-red wt_sidebar_feedback" value="<?php esc_html_e('Report issue', 'wp-migration-duplicator') ?>">-->
             <!--<div class="set_margin_top "><?php // include WT_MGDP_PLUGIN_PATH . '/admin/partials/wp-migration-duplicator-report-issue.php'; ?></div>-->
 
 	</div>

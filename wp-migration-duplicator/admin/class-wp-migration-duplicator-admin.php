@@ -109,7 +109,7 @@ class Wp_Migration_Duplicator_Admin
             ?><div class="wt_mgdp_view_log wt_mgdp_popup">
                     <div class="wt_mgdp_popup_hd">
                             <span style="line-height:40px;" class="dashicons dashicons-media-text"></span>
-                            <span class="wt_mgdp_popup_hd_label"><?php esc_html_e('View log');?></span>
+                            <span class="wt_mgdp_popup_hd_label"><?php esc_html_e('View log', 'wp-migration-duplicator');?></span>
                             <div class="wt_mgdps_popup_close">X</div>
                     </div>
                     <div class="wt_mgdp_log_container">

@@ -125,7 +125,7 @@ if (!defined('ABSPATH')) {
             <a class="button button-primary wt_mgdp_export_download_btn wt_center" name="wt_mgdp_export_download_btn" id="wt_mgdp_export_download_btn" target="_blank" href="" style="height: 48px;width: 200px;text-align: center;padding: 6px; font-size: 16px;margin-left: 185px;" ><?php esc_html_e('Download Backup'); ?></a></br></br> 
 
             <button type="button" name="" class="button-secondary wt_mgdp_finish_popup_cancel " style="font-size: 16px; margin: 0 auto; display: block;">
-                <?php esc_html_e('Close'); ?> 
+                <?php esc_html_e('Close', 'wp-migration-duplicator'); ?> 
             </button>
         </div>
         <div class = "popup_first">
@@ -133,7 +133,7 @@ if (!defined('ABSPATH')) {
 
             <div class="wt_mgdp_schedule_now_box">
                 <div>
-                    <label style="font-size:20px;font-weight: 600;margin-bottom: 4px;"><?php esc_html_e('Based on your selection :'); ?></label>
+                    <label style="font-size:20px;font-weight: 600;margin-bottom: 4px;"><?php esc_html_e('Based on your selection :', 'wp-migration-duplicator'); ?></label>
                 </div>
 
                 <div class="popup-div">
@@ -154,7 +154,7 @@ if (!defined('ABSPATH')) {
                     $extension_zlib_loaded = extension_loaded('zlib') ? 'enabled' : 'disabled';
                     echo esc_attr($extension_zlib_loaded);
                     ?>>
-                    <button type="button" name="wt_mgdp_export_btn" class="button-primary wt_mgdp_save_schedule" style="width: 450px;height: 50px;font-size: 16px;"><?php esc_html_e('Create Backup'); ?></button>	
+                    <button type="button" name="wt_mgdp_export_btn" class="button-primary wt_mgdp_save_schedule" style="width: 450px;height: 50px;font-size: 16px;"><?php esc_html_e('Create Backup', 'wp-migration-duplicator'); ?></button>	
                 </div>
                 <div >
                     <p class="underline-on-hover wt_mgdp_popup_cancel" style="margin-left: 80px"><?php esc_html_e('Close the pop-up and change selections', 'wp-migration-duplicator'); ?></a><br/><br/>

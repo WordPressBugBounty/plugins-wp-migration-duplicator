@@ -5,7 +5,7 @@ Tags:  wordpress migration, backup and restore wordpress, wordpress backup, data
 Requires at least: 3.3
 Tested up to: 6.7
 Requires PHP: 5.6
-Stable tag: 1.5.3
+Stable tag: 1.5.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -117,6 +117,9 @@ Yes. You can migrate your WordPress site between any hosts with the plugin.
 14. Advanced options for restore
 
 == Changelog ==
+
+= 1.5.4  2024-12-24 =
+* Security updates (reported by savphill)
 
 = 1.5.3  2024-11-15 =
 * Tested OK with WordPress 6.7
@@ -285,5 +288,5 @@ Yes. You can migrate your WordPress site between any hosts with the plugin.
 
 == Upgrade notice ==
 
-= 1.5.3 =
-* Tested OK with WordPress 6.7
+= 1.5.4 =
+* Security updates (reported by savphill)

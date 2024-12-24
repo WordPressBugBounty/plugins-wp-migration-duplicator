@@ -49,7 +49,7 @@ if (!class_exists('Wt_Mgdb_Inform_Server_Secure')) {
 				</p>
 				<p>
 					<?php if ((strpos($_SERVER['SERVER_SOFTWARE'], 'nginx') !== false)) : ?>
-				<h4><?php _e('Incase of Nginx server, copy the below code into your server config file to restrict public access to the wp-content folder or contact the server team to assist accordingly.'); ?></h4>
+				<h4><?php esc_html_e( 'Incase of Nginx server, copy the below code into your server config file to restrict public access to the wp-content folder or contact the server team to assist accordingly.', 'wp-migration-duplicator' ); ?></h4>
 				<code>
 					#Deny access to wp-content folders<br />
 					location ~* ^/(wp-content)/(.*?)\.(zip|gz|tar|csv|bzip2|7z)\$ { deny all; }<br />
