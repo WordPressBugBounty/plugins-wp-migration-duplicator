@@ -12,7 +12,7 @@
  * Plugin Name:       WebToffee WP Backup and Migration
  * Plugin URI:        https://wordpress.org/plugins/wp-migration-duplicator/
  * Description:       Migrate WordPress contents and database quickly with ease.
- * Version:           1.5.4
+ * Version:           1.5.5
  * Author:            WebToffee
  * Author URI:        https://www.webtoffee.com/
  * License:           GPL-2.0+
@@ -40,7 +40,7 @@ if(!defined('WP_MIGRATION_DUPLICATOR_VERSION')) //check plugin file already incl
     /**
      * Currently plugin version.
      */
-    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.5.4' );
+    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.5.5' );
 }
 if ( !defined( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT' ) ) {
 	define( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT', 'https://www.webtoffee.com/finding-php-error-logs-in-migrator-plugin/' );
