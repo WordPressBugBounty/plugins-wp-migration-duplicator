@@ -17,16 +17,16 @@ class Wt_mgdp_Sftp
         {
             if($this->login($profile['user_name'], $profile['password']))
             {
-                $out=__('Successfully tested.');
+                $out=__('Successfully tested.', 'wp-migration-duplicator');
                 return wp_send_json_success($out);
             }else
             {
-                $out=__('SFTP connection failed.');
+                $out=__('SFTP connection failed.', 'wp-migration-duplicator');
                 return wp_send_json_error($out);
             }
         }else
         {
-            $out=__('Failed to establish SFTP connection.');
+            $out=__('Failed to establish SFTP connection.', 'wp-migration-duplicator');
             return wp_send_json_error($out);
         }
     }
@@ -43,26 +43,26 @@ class Wt_mgdp_Sftp
                 {
                     if(@file_put_contents($local_file, $file_data))
                     {
-                        $out['msg']=__('Downloaded successfully.');
+                        $out['msg']=__('Downloaded successfully.', 'wp-migration-duplicator');
                         $out['status'] = true;
                     }else
                     {
-                        $out['msg']=__('Unable to create temp file.');
+                        $out['msg']=__('Unable to create temp file.', 'wp-migration-duplicator');
                         $out['status']  = false;
                     }                       
                 }else
                 {
-                    $out['msg']=__('Failed to download file.<br/><br/><b>Possible Reasons</b><br/><b>1.</b> File path may be invalid.<br/><b>2.</b> Maybe File / Folder Permission missing for specified file or folder in path.<br/><b>3.</b> Read permission may be missing.');
+                    $out['msg']=__('Failed to download file.<br/><br/><b>Possible Reasons</b><br/><b>1.</b> File path may be invalid.<br/><b>2.</b> Maybe File / Folder Permission missing for specified file or folder in path.<br/><b>3.</b> Read permission may be missing.', 'wp-migration-duplicator');
                     $out['status']  = false;
                 }
 			}else
 			{
-				$out['msg']=__('SFTP connection failed.');
+				$out['msg']=__('SFTP connection failed.', 'wp-migration-duplicator');
                                 $out['status']  = false;
 			}
 		}else
 		{
-			$out['msg']=__('Failed to establish SFTP connection.');
+			$out['msg']=__('Failed to establish SFTP connection.', 'wp-migration-duplicator');
                         $out['status']  = false;
 		}
 		return $out;
@@ -76,21 +76,21 @@ class Wt_mgdp_Sftp
             {
                 if($this->put_contents($remote_file, $local_file))
                 {
-                    $out['msg']=__('Uploaded successfully.');
+                    $out['msg']=__('Uploaded successfully.', 'wp-migration-duplicator');
                     $out['status'] = true;
                 }else
                 {
-                    $out['msg']=__('Failed to upload file.<br/><br/><b>Possible Reasons</b><br/><b>1.</b> File path may be invalid.<br/><b>2.</b> Maybe File / Folder Permission missing for specified file or folder in path.<br/><b>3.</b> Write permission may be missing.');
+                    $out['msg']=__('Failed to upload file.<br/><br/><b>Possible Reasons</b><br/><b>1.</b> File path may be invalid.<br/><b>2.</b> Maybe File / Folder Permission missing for specified file or folder in path.<br/><b>3.</b> Write permission may be missing.', 'wp-migration-duplicator');
                     $out['status']  = false;
                 }
             }else
             {
-                $out['msg']=__('SFTP login failed.');
+                $out['msg']=__('SFTP login failed.', 'wp-migration-duplicator');
                 $out['status']  = false;
             }
         }else
         {
-            $out['msg']=__('Failed to establish SFTP connection.');
+            $out['msg']=__('Failed to establish SFTP connection.', 'wp-migration-duplicator');
             $out['status']  = false;
         }
         return $out;

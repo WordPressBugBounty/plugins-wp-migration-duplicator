@@ -5,7 +5,7 @@ Tags:  wordpress migration, backup and restore wordpress, wordpress backup, data
 Requires at least: 3.3
 Tested up to: 6.8
 Requires PHP: 5.6
-Stable tag: 1.5.5
+Stable tag: 1.5.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -118,178 +118,15 @@ Yes. You can migrate your WordPress site between any hosts with the plugin.
 
 == Changelog ==
 
-= 1.5.5  2025-04-16 =
-* Tested OK with WordPress 6.8
+= 1.5.6  2025-08-20 =
+* Tested OK with WordPress 6.8.2
+* Plugin Check plugin fixes
 
-= 1.5.4  2024-12-24 =
-* Security updates (reported by savphill)
 
-= 1.5.3  2024-11-15 =
-* Tested OK with WordPress 6.7
-
-= 1.5.2  2024-08-09 =
-* Tested OK with WordPress 6.6.1
-
-= 1.5.1  2024-07-04 =
-* Tested OK with WordPress 6.5.5
-* [Fix] - Conflict with erooms plugin
-
-= 1.5.0  2024-06-06 =
-* Tested OK with WordPress 6.5.4
-
-= 1.4.8  2024-03-11 =
-* Security updates (reported by Joshua)
-* Tested OK with WordPress 6.4.3
-
-= 1.4.7  2023-12-19 =
-* Security updates (reported by Joshua)
-* Tested OK with WordPress 6.4.2
-
-= 1.4.6  2023-12-05 =
-* Tested OK with WordPress 6.4.1
-
-= 1.4.5  2023-10-27 =
-* [Fix] - Security updates (reported by Alex)
-
-= 1.4.4  2023-10-17 =
-* [Fix] - Security updates (reported by Abdi Pranata)
-
-= 1.4.3  2023-08-30 =
-* Tested OK with WordPress 6.3
-
-= 1.4.2  2023-07-24 =
-* [Fix] - Security updates (reported by Abdi Pranata)
-* Tested OK with WordPress 6.2.2
-
-= 1.4.1  2023-05-23 =
-* [Fix] - Security updates (reported by Abdi Pranata)
-
-= 1.4.0  2023-04-17 =
-* Fix : FTP connection issue while backup.
-* Tested OK with PHP 8.2
-
-= 1.3.9  2023-03-30 =
-* Tested OK with WordPress 6.2
-* Fix : Google drive authentication issue solved.
-* Fix : Unable to import from Google Drive
-* Improvement: Code stability improved.
-
-= 1.3.8 2022-09-01 =
-* Tested OK with WordPress 6.0.2
-* Improvement: Import file handling improved
-
-= 1.3.7  2022-05-26 =
-* Tested OK with WordPress 6.0
-
-= 1.3.6 =
-* Improvement: Code stability improved.
-* Tested OK with WordPress 5.9.3
-
-= 1.3.5 =
-* Tested OK with WordPress 5.9.
-
-= 1.3.4 =
-* Code stability improved.
-* Improved UI/UX
-* Improvement: Error handling improved, internal memory optimization.
-
-= 1.3.3 =
-* Code stability improved.
-* Improvement: Empty file handling in restore.
-* Fix : Dropzone upload size issue and timeout issue solved.
-* WP 5.8.2 tested OK
-
-= 1.3.2 =
-* Code stability improved.
-* Improvement: SFTP and Amazon S3 file handling.
-* Fix: Style correction
-
-= 1.3.1 =
-* Timeout issue solved
-* Banner close button issue solved
-* WP 5.8.1 tested OK.
-
-= 1.3.0 =
-* Improved UI/UX
-* WordPress Cron Schedule for export
-* SFTP cloud storage option added support
-* Advanced options for Import/Export to speedup the operation
-* WP 5.8 tested OK.
-
-= 1.2.5 =
-* Improvement: Code stability improved.
-* Option to select all and deselect all Folders/Files on export page.
-
-= 1.2.4 =
-* Bug Fix :- Log table create issue solved.
-
-= 1.2.3 =
-* Dedicated logs for debugging failures.
-* FTP improvement: Test FTP added , FTP profile name save issue solved.
-* Improved UI for better user experience.
-
-= 1.2.2 =
-* WP 5.7.2 tested OK.
-* Improvement: Error handling improved, internal memory optimization.
-
-= 1.2.1 =
-* WP 5.7.1 tested OK.
-* Improvement: Error handling improved, Content Update.
-* Bug Fix :- __PHP_Incomplete_Class export.
-
-= 1.2.0 =
-* WP 5.6.1 tested OK.
-* Improvement: FTP, Google Drive, and Amazon S3 import/export added
-
-= 1.1.7 =
-* WP 5.4 tested OK.
-
-= 1.1.6 =
-* Blocked direct access to the backup zip file via http.
-
-= 1.1.5 =
-* Optimized access control.
-
-= 1.1.4 =
-* Improvement: Added filter wt_mgdp_exclude_extensions to exclude file types from export.
-
-= 1.1.3 =
-* Tested OK with WordPress 5.3
-
-= 1.1.2 =
-* UI improvement.
-* Added filter wt_mgdp_exclude_files to exclude files/directories from export.
-
-= 1.1.1 =
-* Bug Fix: Update write permission failure on export.
-= 1.1.0 =
-* Tested OK with WordPress 5.2.
-= 1.0.9 =
-* Tested OK with WordPress 5.1.1.
-= 1.0.8 =
-* Tested OK with WordPress 5.0.2.
-= 1.0.7 =
-* Bug Fix: Flashing progress bar.
-= 1.0.6 =
-* Feedback content updates.
-= 1.0.5 =
-* Feedback content updates.
-= 1.0.4 =
-* Backup file url update.
-= 1.0.3 =
-* Backup file upload validation.
-= 1.0.2 =
-* German translation added.
-= 1.0.1 =
-* Content changes.
-= 1.0.0 =
-* Revamped version
-= 0.0.2 =
-* Initial commit
-= 0.0.1 =
-* Initial commit
+[See changelog for all versions](https://plugins.svn.wordpress.org/wp-migration-duplicator/trunk/changelog.txt)
 
 == Upgrade notice ==
 
-= 1.5.5 =
-* Tested OK with WordPress 6.8
+= 1.5.6 =
+* Tested OK with WordPress 6.8.2
+* Plugin Check plugin fixes

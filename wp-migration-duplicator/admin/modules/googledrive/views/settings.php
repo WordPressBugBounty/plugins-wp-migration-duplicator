@@ -9,12 +9,14 @@ if ( ! defined( 'WPINC' ) ) {
 </div>
 <div class="wt_info_box" style="margin-bottom:35px;">
 <ul style="list-style:disc; margin-left:20px;">
-		<li><?php echo sprintf(wp_kses(__('Obtain client ID and client secret from the Google developer console to get connected to Google Drive. Refer Google developer <a href="%s" target="_blank">documentation</a>', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://developers.google.com/drive/api/v3/about-auth')); ?></li>
+		<li><?php 
+		// translators: 1: Google developer documentation link
+		echo sprintf(wp_kses(__('Obtain client ID and client secret from the Google developer console to get connected to Google Drive. Refer Google developer <a href="%s" target="_blank">documentation</a>', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://developers.google.com/drive/api/v3/about-auth')); ?></li>
 		<li><?php esc_html_e('To update the credentials: disconnect, update and authenticate.','wp-migration-duplicator'); ?></li>
 	</ul>
 </div>
 
-<form method="post"  action="<?php echo esc_url($_SERVER["REQUEST_URI"]);?>" id="wt_mgdp_googledrive">
+<form method="post"  action="<?php echo esc_url($_SERVER["REQUEST_URI"]); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated ?>" id="wt_mgdp_googledrive">
 	<?php wp_nonce_field('wp_migration_duplicator_googledrive','_google_drive_auth'); ?>
 	<input type="hidden" name="wt_authenticate_google_form">
 	<table class="form-table wf-form-table">

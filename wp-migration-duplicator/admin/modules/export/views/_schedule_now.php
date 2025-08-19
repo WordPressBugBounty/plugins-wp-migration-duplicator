@@ -121,8 +121,8 @@ if (!defined('ABSPATH')) {
         </div>
         <div class ="popup_third popup_common">
             <img class="wt_center" src = <?php echo esc_url(plugins_url(basename(plugin_dir_path(WT_MGDP_PLUGIN_FILENAME))) . '/admin/images/finish.svg'); ?>  >          <br>   
-            <h2 style="color:green;text-align: center;font-size: 18px"><?php esc_html_e(" Export completed "); ?></h2></br> <br>        
-            <a class="button button-primary wt_mgdp_export_download_btn wt_center" name="wt_mgdp_export_download_btn" id="wt_mgdp_export_download_btn" target="_blank" href="" style="height: 48px;width: 200px;text-align: center;padding: 6px; font-size: 16px;margin-left: 185px;" ><?php esc_html_e('Download Backup'); ?></a></br></br> 
+            <h2 style="color:green;text-align: center;font-size: 18px"><?php esc_html_e(" Export completed ", 'wp-migration-duplicator'); ?></h2></br> <br>        
+            <a class="button button-primary wt_mgdp_export_download_btn wt_center" name="wt_mgdp_export_download_btn" id="wt_mgdp_export_download_btn" target="_blank" href="" style="height: 48px;width: 200px;text-align: center;padding: 6px; font-size: 16px;margin-left: 185px;" ><?php esc_html_e('Download Backup', 'wp-migration-duplicator'); ?></a></br></br> 
 
             <button type="button" name="" class="button-secondary wt_mgdp_finish_popup_cancel " style="font-size: 16px; margin: 0 auto; display: block;">
                 <?php esc_html_e('Close', 'wp-migration-duplicator'); ?> 

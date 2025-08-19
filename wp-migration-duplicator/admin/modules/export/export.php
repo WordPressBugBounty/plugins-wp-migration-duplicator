@@ -109,7 +109,7 @@ class Wp_Migration_Duplicator_Export
                         $_POST[$d_key] = $d_value;
                     }
                 }//cron
-		$action = Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['sub_action']);
+		$action = Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['sub_action'])); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$out = array(
 			'status' => false,
 			'msg' => __('Error', 'wp-migration-duplicator'),
@@ -130,7 +130,7 @@ class Wp_Migration_Duplicator_Export
 			exit();
 		}
 		if (in_array($action, $this->ajax_action_list) && method_exists($this, $action)) {
-			$this->export_id = (isset($_POST['export_id']) ? intval($_POST['export_id']) : 0);
+			$this->export_id = (isset($_POST['export_id']) ? intval($_POST['export_id']) : 0); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$out = $this->{$action}($out);
 		} else {
 			//error
@@ -169,20 +169,20 @@ class Wp_Migration_Duplicator_Export
 	 */
 	private function stop_export($out)
 	{
-                $export_log = Wp_Migration_Duplicator::get_log_by_id($_POST['export_id']);
+                $export_log = isset($_POST['export_id']) ? Wp_Migration_Duplicator::get_log_by_id(absint($_POST['export_id'])) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                 $log_data = json_decode($export_log['log_data'], true);
                 $backup_file_name = $log_data['backup_file'];
                 $file_name = Wp_Migration_Duplicator::$backup_dir . '/' . $backup_file_name;
                 if(file_exists($file_name)){
                     unlink($file_name);
                 }
-                $log_file_name = Wp_Migration_Duplicator::$backup_dir . '/' . "path_details".$_POST['export_id'].md5($backup_file_name).".json";
+                $log_file_name = Wp_Migration_Duplicator::$backup_dir . '/' . "path_details".absint($_POST['export_id']).md5($backup_file_name).".json"; // phpcs:ignore WordPress.Security.NonceVerification.Missing
                 if(file_exists($log_file_name)){
                     unlink($log_file_name);
                 }
                 
 		//update log status
-		$to_db_where_arr = array('id_wtmgdp_log' => $_POST['export_id']);
+		$to_db_where_arr = array('id_wtmgdp_log' => isset($_POST['export_id']) ? absint($_POST['export_id']) : 0); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		Wp_Migration_Duplicator::delete_log($to_db_where_arr);
 		$out['status'] = true;
 		return $out;
@@ -234,11 +234,11 @@ class Wp_Migration_Duplicator_Export
             }
             $memory = @size_format(ini_get('memory_limit'));
             $wp_memory = @size_format(wp_convert_hr_to_bytes(WP_MEMORY_LIMIT));                       
-            $error_message = '---[ New export started at '.date('Y-m-d H:i:s').' ] PHP Memory: ' . $memory . ', WP Memory: ' . $wp_memory;
-            Webtoffe_logger::write_log( 'Export','---[ New export started at '.date('Y-m-d H:i:s').' ] PHP Memory: ' . $memory . ', WP Memory: ' . $wp_memory );
+            $error_message = '---[ New export started at '.date('Y-m-d H:i:s').' ] PHP Memory: ' . $memory . ', WP Memory: ' . $wp_memory; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+            Webtoffe_logger::write_log( 'Export','---[ New export started at '.date('Y-m-d H:i:s').' ] PHP Memory: ' . $memory . ', WP Memory: ' . $wp_memory ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
             Webtoffe_logger::write_log( 'Export','Backup process initiated..' );
             $export_type_array = array('files_and_db','files','db');
-            $export_type = (isset($_POST['export_type']) && !empty($_POST['export_type'])&& in_array($_POST['export_type'], $export_type_array)) ? $_POST['export_type'] : 'files_and_db';
+            $export_type = (isset($_POST['export_type']) && !empty($_POST['export_type'])&& in_array($_POST['export_type'], $export_type_array)) ? sanitize_text_field(wp_unslash($_POST['export_type'])) : 'files_and_db'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
             $tables_arr = array();
             if($export_type == 'db' || $export_type == 'files_and_db'){
 
@@ -273,38 +273,39 @@ class Wp_Migration_Duplicator_Export
                     $di = new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS);
                     $ri = new RecursiveIteratorIterator($di, RecursiveIteratorIterator::CHILD_FIRST);
                     foreach ( $ri as $file ) {
-                            $file->isDir() ?  rmdir($file) : unlink($file);
+                            $file->isDir() ?  rmdir($file) : unlink($file); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
                     }
-                    rmdir($dir);
+                    rmdir($dir); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
                     Webtoffe_logger::write_log( 'Export','Old database backup directory removed.' );
                 }
 		//directories & files in wp-content
 		$database_directory = Wp_Migration_Duplicator::$database_dir;
 		if (!is_dir($database_directory)) {
 			$oldmask = umask(0);
-			$directory_status = mkdir($database_directory, 0755);
+			$directory_status = mkdir($database_directory, 0755); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
 			umask($oldmask);
 			if (!$directory_status) {
 				$error_message = 'Unable to create database directory. Please check write permission for `wp-content` folder.';
                                 Webtoffe_logger::write_log( 'Export',$error_message );
 				Webtoffe_logger::error($error_message);
 				$out['status'] = false;
+				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
 				$out['msg'] = __($error_message, 'wp-migration-duplicator');
 				return $out;
 			} else {
 				//add an index file to block directory listing
-				$fh = fopen($database_directory . '/index.php', "w");
+				$fh = fopen($database_directory . '/index.php', "w"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 				if (is_resource($fh)) {
-					fwrite($fh, '<?php // Silence is golden');
+					fwrite($fh, '<?php // Silence is golden'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 				}
-				fclose($fh);
+				fclose($fh); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 			}
 		}
                 Webtoffe_logger::write_log( 'Export','Database backup directory successfully created' );
 
             }
 		$to_exclude_items	=	$this->get_exclude_items();
-		$exclude	=	(isset($_POST['exclude']) && is_array($_POST['exclude']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['exclude'],'text_arr') : array());
+		$exclude	=	(isset($_POST['exclude']) && is_array($_POST['exclude']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['exclude'],'text_arr') : array()); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		$to_exclude_items	= array_unique(array_merge($to_exclude_items, $exclude));
 		/**
 		 * @since 1.1.4  take all file extensions to exclude
@@ -337,29 +338,30 @@ class Wp_Migration_Duplicator_Export
                 }
 		if (!is_dir(Wp_Migration_Duplicator::$backup_dir)) {
 			$oldmask = umask(0);
-			$backup_directory = mkdir(Wp_Migration_Duplicator::$backup_dir, 0775);
+			$backup_directory = mkdir(Wp_Migration_Duplicator::$backup_dir, 0775); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
 			umask($oldmask);
 			if (!$backup_directory) {
 				$error_message = 'Unable to create backup directory. Please check write permission for `wp-content` folder.';
                                 Webtoffe_logger::write_log( 'Export',$error_message );
 				Webtoffe_logger::error($error_message);
 				$out['status'] = false;
+				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
 				$out['msg'] = __($error_message, 'wp-migration-duplicator');
 				return $out;
 			} else {
 				//add an index file to block directory listing
-				$fh = fopen(Wp_Migration_Duplicator::$backup_dir . '/index.php', "w");
+				$fh = fopen(Wp_Migration_Duplicator::$backup_dir . '/index.php', "w"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 				if (is_resource($fh)) {
-					fwrite($fh, '<?php // Silence is golden');
+					fwrite($fh, '<?php // Silence is golden'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 				}
-				fclose($fh);
+				fclose($fh); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 			}
 		}
 
                 $itteration_file_path = array();
                 $file_path = array();
                 $dir_arrr = array();
-                $exclude = isset($_POST['exclude'])&& !empty($_POST['exclude'])? $_POST['exclude'] : array();
+                $exclude	=	(isset($_POST['exclude']) && is_array($_POST['exclude']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['exclude'],'text_arr') : array()); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                 foreach ($dir_arr as $fkey => $file_name) {
                     $itteration_file_path[] = self::wt_gets_complete_file_path($file_name,$exclude);
                 }
@@ -373,8 +375,8 @@ class Wp_Migration_Duplicator_Export
                 $find = array();
 		$replace = array();  
 		$tme = time();
-                $file_name = isset($_POST['local_filename']) && !empty($_POST['local_filename'])? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['local_filename'],'text') : '';
-                $export_option = isset($_POST['export_option']) && !empty($_POST['export_option'])? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['export_option'],'text') : 'local';
+                $file_name = isset($_POST['local_filename']) && !empty($_POST['local_filename'])? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['local_filename']),'text') : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $export_option = isset($_POST['export_option']) && !empty($_POST['export_option'])? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['export_option']),'text') : 'local'; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
                 $backup_file = Wp_Migration_Duplicator::$backup_dir . '/' . $file_name;
                 $i=1;
@@ -384,11 +386,11 @@ class Wp_Migration_Duplicator_Export
                  $i++;
                 }
 				$randomstring = Wp_Migration_Duplicator_Security_Helper::generateRandomString();
-                $backup_file_name = !empty($file_name_new) ?$file_name_new.'.zip':$randomstring.date('Y-m-d-h-i-sa', $tme) . '.zip';
+                $backup_file_name = !empty($file_name_new) ?$file_name_new.'.zip':$randomstring.date('Y-m-d-h-i-sa', $tme) . '.zip'; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 		$log_data = array('tables' => $tables_arr, 'files' => $file_arr, 'dirs' => $dir_arr, 'find' => $find, 'replace' => $replace, 'backup_file' => $backup_file_name ,'export_type' => $export_type,'export_location' => $export_option);
 
 		$data_arr = array(
-			'log_name' => date('Y-m-d h:i:s A'),
+			'log_name' => date('Y-m-d h:i:s A'), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 			'log_data' => json_encode($log_data),
 			'status' => Wp_Migration_Duplicator::$status_incomplete,
 			'log_type' => 'export',
@@ -407,22 +409,22 @@ class Wp_Migration_Duplicator_Export
                    if( file_exists($tbl_file_name)){
                        @unlink($tbl_file_name);
                    }
-                    $fp = fopen($tbl_file_name, "w");
+                    $fp = fopen($tbl_file_name, "w"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                     if (is_resource($fp)) {
-                        fwrite($fp, json_encode($db_import_help_data));
+                        fwrite($fp, json_encode($db_import_help_data)); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                     }
-                     fclose($fp);                     
+                     fclose($fp); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
                      unset($target_tables_save);unset($db_import_help_data);
                 }
 		$this->export_id = Wp_Migration_Duplicator::create_log($data_arr);
                 if( file_exists(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json')){
                       @unlink(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json');
                   }
-                $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json', "w");
+                $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json', "w"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                 if (is_resource($ffp)) {
-                    fwrite($ffp, json_encode($dir_arrr));
+                    fwrite($ffp, json_encode($dir_arrr)); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                 }
-                fclose($ffp);     
+                fclose($ffp); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
                 if($export_type == 'db' || $export_type == 'files_and_db'){
                     Webtoffe_logger::write_log( 'Export','Database backup process started..' );
                 }
@@ -482,12 +484,12 @@ class Wp_Migration_Duplicator_Export
 		   return $out; //error
                 }
 
-		$offset = intval($_POST['offset']);
-		$limit = intval($_POST['limit']);
+		$offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$limit = isset($_POST['limit']) ? intval($_POST['limit']) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-                set_time_limit(0);
-                ini_set('max_execution_time', -1);
-                ini_set('memory_limit', -1);			
+                set_time_limit(0); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                ini_set('max_execution_time', -1); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                ini_set('memory_limit', -1); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
 
 		$backup_file = Wp_Migration_Duplicator::$backup_dir . '/' . $backup_file_name;
                 if ($offset == 0) { 
@@ -496,7 +498,7 @@ class Wp_Migration_Duplicator_Export
                 } 
 
                 $to_exclude_items =	$this->get_exclude_items();
-                $exclude = (isset($_POST['exclude']) && is_array($_POST['exclude']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['exclude'],'text_arr') : array());
+                $exclude = (isset($_POST['exclude']) && is_array($_POST['exclude']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['exclude'],'text_arr') : array()); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                 $to_exclude_items = array_unique(array_merge($to_exclude_items, $exclude));
                 /**
                  * @since 1.2.2  take all file extensions to exclude
@@ -532,6 +534,7 @@ class Wp_Migration_Duplicator_Export
 					//$zip->addFile($full_path, $file);
 				}
 			}
+			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
 			$out['sub_percent_label'] = __($total_files . " file(s) exported.", 'wp-migration-duplicator');
                         Webtoffe_logger::write_log( 'Export',$total_files . " files exported.");
 		} else //export directories
@@ -544,6 +547,7 @@ class Wp_Migration_Duplicator_Export
                                     $file_path = WP_CONTENT_DIR;
                                     $archive->add($path_Array[$real_offset], PCLZIP_OPT_REMOVE_PATH, $file_path);
                                               
+				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
                                     $out['sub_percent_label'] = __($total_exported_directories . " out of " . $total_dirs . " directory checkpoint exported.", 'wp-migration-duplicator');
                                     Webtoffe_logger::write_log( 'Export',$total_exported_directories . " out of " . $total_dirs . " directory checkpoint exported.");
 					
@@ -575,24 +579,26 @@ class Wp_Migration_Duplicator_Export
 
 			$out['step_finished'] = 1;
 			$out['backup_file'] = html_entity_decode(Wp_Migration_Duplicator_Admin::generate_backup_file_url($backup_file_name)); 
-                        $msg = __('Export file processing completed');
+                        $msg = __('Export file processing completed','wp-migration-duplicator');
                         Webtoffe_logger::write_log( 'Export','Backup completed successfully!' );
                         $msg.='<span class="wt_mgdp_popup_close" style="line-height:10px;width:auto" onclick="popup_handler.hide_export_info_box();">X</span>';                           
                         $msg.='<span class="wt_mgdp_info_box_finished_text" style="font-size: 10px; display:block">';
-                        $msg.=__('You can manage exports from Backups section.');
-                        $msg.='<a class="button button-secondary" style="margin-top:10px;" onclick="popup_handler.hide_export_info_box();" target="_blank" href="'.$out['backup_file'].'" >'.__('Download file').'</a></span>';
+                        $msg.=__('You can manage exports from Backups section.','wp-migration-duplicator');
+                        $msg.='<a class="button button-secondary" style="margin-top:10px;" onclick="popup_handler.hide_export_info_box();" target="_blank" href="'.$out['backup_file'].'" >'.__('Download file','wp-migration-duplicator').'</a></span>';
                         
                         $out['msg']=$msg;
                                 //content_url() . Wp_Migration_Duplicator::$backup_dir_name . "/" . $backup_file_name;
 			$out['backup_file_name'] = $backup_file_name;
-			$out['sub_percent_label'] = __(sprintf("%d files and %d directories exported", $total_files, $total_dirs), 'wp-migration-duplicator');
-			$out['percent_label'] = __(sprintf("%d files, %d directories, %d database tables exported", $total_files, $total_dirs, count($log_data['tables'])), 'wp-migration-duplicator');
-                        if(isset($_POST['export_option']) && $_POST['export_option'] == 'local'){
-                          Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' );
+			// translators: 1: total files, 2: total directories
+			$out['sub_percent_label'] = __(sprintf("%d files and %d directories exported", $total_files, $total_dirs), 'wp-migration-duplicator'); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+			// translators: 1: total files, 2: total directories, 3: total database tables
+			$out['percent_label'] = __(sprintf("%d files, %d directories, %d database tables exported", $total_files, $total_dirs, count($log_data['tables'])), 'wp-migration-duplicator'); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                        if(isset($_POST['export_option']) && $_POST['export_option'] == 'local'){ // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                          Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
                           delete_option('wp_mgdp_log_id');                           
                         }
 		} else {
-			$out['percent_label'] = __("Exporting files and directories", 'wp-migration-duplicator');
+			$out['percent_label'] = esc_html__("Exporting files and directories", 'wp-migration-duplicator');
 		}
 		$out['status'] = true;
 		$out['step'] = 'export_files';
@@ -611,7 +617,7 @@ class Wp_Migration_Duplicator_Export
 
 	public function full_copy( $source, $target ) {
 		if ( is_dir( $source ) ) {
-			@mkdir( $target,0777 );
+			@mkdir( $target,0777 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
 			$d = dir( $source );
 			while ( FALSE !== ( $entry = $d->read() ) ) {
 				if ( $entry == '.' || $entry == '..' ) {
@@ -657,7 +663,7 @@ class Wp_Migration_Duplicator_Export
 	*/
 	private function get_mysqli()
 	{
-		$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+		$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME); // phpcs:ignore WordPress.DB.RestrictedClasses.mysql__mysqli
 		if ($mysqli->connect_errno) {
 			$error = "Failed to connect to MySQL: " . $mysqli->connect_error;
 			Webtoffe_logger::error($error);
@@ -685,11 +691,11 @@ class Wp_Migration_Duplicator_Export
                 $log_data = json_decode($export_log['log_data'], true);
                 if($log_data['export_type'] == 'db' || $log_data['export_type'] == 'files_and_db'){
 
-                    $offset = intval($_POST['offset']);
-                    $limit = intval($_POST['limit']);
-                    $t_offset = intval($_POST['t_offset']);
+                    $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                    $limit = isset($_POST['limit']) ? intval($_POST['limit']) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                    $t_offset = isset($_POST['t_offset']) ? intval($_POST['t_offset']) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                     $advanced_settings = get_option('wt_mgdp_cadvanced_settings', null);
-                    $t_limit = isset($advanced_settings['db_record_per_req'])&& !empty($advanced_settings['db_record_per_req']) ? intval($advanced_settings['db_record_per_req']) : intval($_POST['t_limit']);
+                    $t_limit = isset($advanced_settings['db_record_per_req'])&& !empty($advanced_settings['db_record_per_req']) ? intval($advanced_settings['db_record_per_req']) : intval($_POST['t_limit']); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 //                      $t_limit = apply_filters('wt_mgdp_export_table_row_size',intval($_POST['t_limit']));
                     if($offset == 0){
                     Webtoffe_logger::write_log( 'Export','Limit: '.$limit.' Offset '.$offset );
@@ -697,9 +703,9 @@ class Wp_Migration_Duplicator_Export
                     $find = $log_data['find']; //taking find and replace from db
                     $replace = $log_data['replace'];
                     $exclude_table_list = array($wpdb->prefix.'wtmgdp_log',$wpdb->prefix.'wt_mgdp_action_history');
-                    set_time_limit(0);
-                    ini_set('max_execution_time', -1);
-                    ini_set('memory_limit', -1);
+                    set_time_limit(0); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                    ini_set('max_execution_time', -1); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                    ini_set('memory_limit', -1); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
                     $upload = wp_upload_dir();
                     $upload_dir = $upload['basedir'];
                     $download_path = $upload_dir . '/.';
@@ -708,6 +714,7 @@ class Wp_Migration_Duplicator_Export
                             $out['status'] = false;
                             $error_message = 'Failed to connect to MySQL. Please check the log file for more details.';
                             Webtoffe_logger::write_log( 'Export',$error_message );
+                            // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
                             $out['msg'] = __($error_message, 'wp-migration-duplicator');
                             Webtoffe_logger::error($error_message);
                             return $out;
@@ -739,12 +746,12 @@ class Wp_Migration_Duplicator_Export
                     $directory_status = true;
                     if (!is_dir($database_directory)) {
                             $oldmask = umask(0);
-                            $directory_status = mkdir($database_directory, 0777);
+                            $directory_status = mkdir($database_directory, 0777); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
                             umask($oldmask);
                     }
                     if ($directory_status) {
                             $fwrite_mode = ($offset == 0 ? "w" : "a");
-                            $fp = fopen($database_directory . '/' . $file_name, $fwrite_mode);
+                            $fp = fopen($database_directory . '/' . $file_name, $fwrite_mode); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                             if (!$fp) {
 
                                     $directory_error = true;
@@ -758,6 +765,7 @@ class Wp_Migration_Duplicator_Export
                             Webtoffe_logger::error($error_message);
                             Webtoffe_logger::write_log( 'Export',$error_message );
                             $out['status'] = false;
+                            // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
                             $out['msg'] = __($error_message, 'wp-migration-duplicator');
                             return $out;
                     }  
@@ -779,7 +787,7 @@ class Wp_Migration_Duplicator_Export
                                             $sub_percent_tbl_label ='';
                                             $Texport = FALSE;
                                             $chunks_req	= $mysqli->query('SELECT count(*) FROM `'.$table.'`');                                        
-                                            $chunks_res = mysqli_fetch_array($chunks_req);
+                                            $chunks_res = mysqli_fetch_array($chunks_req); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_fetch_array
                                             $chunks = intval($chunks_res[0]);
                                             if ($chunks >= $t_offset) {
                                                  $limit_str = 'LIMIT '. $t_offset . ','.$t_limit ;
@@ -836,7 +844,7 @@ class Wp_Migration_Duplicator_Export
                         $sub_percent_label_log = $sub_percent_label ." ". $sub_percent_tbl_label_log;
                     }
                     Webtoffe_logger::write_log( 'Export',$sub_percent_label_log );
-                    $out['sub_percent_label'] = __($sub_percent_label, 'wp-migration-duplicator');
+                    $out['sub_percent_label'] = __($sub_percent_label, 'wp-migration-duplicator'); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
                     $out['percent_label'] = __("Exporting database", 'wp-migration-duplicator');
                     if ($total_tables <= $new_offset) {
                         Webtoffe_logger::write_log( 'Export',$sub_percent_label_log );
@@ -869,13 +877,13 @@ class Wp_Migration_Duplicator_Export
                   $tbl_file_name = str_replace($wpdb->prefix, '', $table);
                 $file_name = $time_smp."_webtoffee_db_table_".$tbl_file_name."_".$tal_counter.".sql";
                 $database_directory = Wp_Migration_Duplicator::$database_dir;
-                $file = fopen($database_directory . '/' . $file_name, 'w');
+                $file = fopen($database_directory . '/' . $file_name, 'w'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                 $res = $mysqli->query('SHOW CREATE TABLE ' . $table);
                 $TableMLine = $res->fetch_row();
                 $table = str_replace($wpdb->prefix, 'webtoffee_', $table);
                 $TableMLine[1] = $TableMLine[1] = str_replace($wpdb->prefix, 'webtoffee_', $TableMLine[1]);
                 $content = "\n\n" . "DROP TABLE IF EXISTS `$table` ;/*END*/ " . "\n\n" . "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";/*END*/\r\nSET time_zone = \"+00:00\";/*END*/\r\n\r\n\r\n/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;/*END*/\r\n/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;/*END*/\r\n/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;/*END*/\r\n/*!40101 SET NAMES utf8 */;/*END*/\r\n--\r\n-- Database: `" . DB_NAME . "`\r\n--\r\n\r\n\r\n" . "\n\n" . $TableMLine[1] . ";/*END*/\n\n";
-                fwrite($file, "$content");
+                fwrite($file, "$content"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
     
                }
             
@@ -887,7 +895,7 @@ class Wp_Migration_Duplicator_Export
                         $tbl_file_name = str_replace($wpdb->prefix, '', $table);
                         $file_name = $time_smp."_webtoffee_db_table_".$tbl_file_name."_".$tal_counter.".sql";
                         $database_directory = Wp_Migration_Duplicator::$database_dir;
-			$file = fopen($database_directory . '/' . $file_name, 'w');
+			$file = fopen($database_directory . '/' . $file_name, 'w'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                   }
                  if($t_offset == 0 && $st_counter == 0){
                     $res = $mysqli->query('SHOW CREATE TABLE ' . $table);
@@ -895,34 +903,36 @@ class Wp_Migration_Duplicator_Export
                     $table = str_replace($wpdb->prefix, 'webtoffee_', $table);
                     $TableMLine[1] = $TableMLine[1] = str_replace($wpdb->prefix, 'webtoffee_', $TableMLine[1]);
                     $content = "\n\n" . "DROP TABLE IF EXISTS `$table` ;/*END*/ " . "\n\n" . "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";/*END*/\r\nSET time_zone = \"+00:00\";/*END*/\r\n\r\n\r\n/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;/*END*/\r\n/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;/*END*/\r\n/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;/*END*/\r\n/*!40101 SET NAMES utf8 */;/*END*/\r\n--\r\n-- Database: `" . DB_NAME . "`\r\n--\r\n\r\n\r\n" . "\n\n" . $TableMLine[1] . ";/*END*/\n\n";
-                    fwrite($file, "$content");              
+                    fwrite($file, "$content"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                 }
                 
                 $table = str_replace($wpdb->prefix, 'webtoffee_', $table);
-                fwrite($file, "\nINSERT INTO `" . $table . "` VALUES");
+                fwrite($file, "\nINSERT INTO `" . $table . "` VALUES"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                 
-                fwrite($file, "\n(");
+                fwrite($file, "\n("); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                 for ($j = 0; $j < $fields_amount; $j++) {
                     
                   //$row[$j] = $this->webtoffee_serialize($find, $replace, $row[$j]); 
+				  if(null !== $row[$j]){
                   $row[$j] = addslashes($row[$j]);
+				  }
 
                   if (isset($row[$j])) 
-                      fwrite($file, '"'.$row[$j].'"');
+                      fwrite($file, '"'.$row[$j].'"'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                   else
-                      fwrite($file, '""');
+                      fwrite($file, '""'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 
                   if ($j<($fields_amount-1))
-                      fwrite($file, ',');
+                      fwrite($file, ','); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                 }
                 $row_counter=$row_counter+1;
                 
                 if($row_counter==$saveDatabaseFields_row_size || $st_counter+1==$rows_num){
-                     fwrite($file, ");/*END*/");
+                     fwrite($file, ");/*END*/"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                      $row_counter = 0;
                      $tal_counter =$tal_counter + 1;
                 }else{
-                    fwrite($file, ");/*END*/");
+                    fwrite($file, ");/*END*/"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                 }
                 
 //                  if ((($st_counter+1)%100==0 && $st_counter!=0) || $st_counter+1==$rows_num) {
@@ -973,13 +983,13 @@ class Wp_Migration_Duplicator_Export
                       Webtoffe_logger::write_log( 'Export','DB file missing.' ); 
                    }
                     file_put_contents(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json', '');
-                   $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json', "w");
+                   $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/path_details'.$this->export_id.md5($backup_file_name).'.json', "w"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                    if (is_resource($ffp)) {
-                       fwrite($ffp, json_encode($paths_array));
+                       fwrite($ffp, json_encode($paths_array)); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                    }else{
                         Webtoffe_logger::write_log( 'Export','DB path write error .' );
                    }
-                   fclose($ffp);
+                   fclose($ffp); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
                 Webtoffe_logger::write_log( 'Export','DB split compleited.' );
               }
 
@@ -1010,7 +1020,7 @@ class Wp_Migration_Duplicator_Export
 	public function out_settings_form($arr)
 	{
             if(Wp_Migration_Duplicator_Security_Helper::wt_mgdp_is_screen_allowed()){
-		wp_enqueue_script($this->module_id, plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION);
+		wp_enqueue_script($this->module_id, plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
                 wp_enqueue_style('select2css', WT_MGDP_PLUGIN_URL. 'admin/css/select2.css', array(), WP_MIGRATION_DUPLICATOR_VERSION, 'all' );
                 wp_enqueue_script('select2', WT_MGDP_PLUGIN_URL.'admin/js/select2.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION, false );
 		
@@ -1020,7 +1030,8 @@ class Wp_Migration_Duplicator_Export
 			),
 			'ajax_url' => admin_url('admin-ajax.php'),
 			'labels' => array(
-				'error' => sprintf(__('An unknown error has occurred! Refer to our %stroubleshooting guide%s for assistance.'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
+				// translators: 1: troubleshooting guide link, 2: closing anchor tag
+				'error' => sprintf(__('An unknown error has occurred! Refer to our %1$s troubleshooting guide %2$s for assistance.', 'wp-migration-duplicator'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
 				'success' => __('Success', 'wp-migration-duplicator'),
                                 'calculation_error' => __('File size calculation error', 'wp-migration-duplicator'),
 				'finished' => __('Finished', 'wp-migration-duplicator'),
@@ -1033,13 +1044,13 @@ class Wp_Migration_Duplicator_Export
 				'startnewexport' => __("Start new export", 'wp-migration-duplicator'),
 				'choose_profile' => __("Please choose FTP profile", 'wp-migration-duplicator'),
 				'specify_path' => __("Specify the export path", 'wp-migration-duplicator'),
-                                'invalid_time_hr'=>__('Please enter a valid time in hours(1-12).'),
-                                'invalid_time_mnt'=>__('Please enter a valid time in minutes(0-60).'),
-                                'invalid_import_option'=>__('Please select import option.'),
+                                'invalid_time_hr'=>__('Please enter a valid time in hours(1-12).', 'wp-migration-duplicator'),
+                                'invalid_time_mnt'=>__('Please enter a valid time in minutes(0-60).', 'wp-migration-duplicator'),
+                                'invalid_import_option'=>__('Please select import option.', 'wp-migration-duplicator'),
 				'zip_disable' => __("Before export Please enable ZipArchive extension in server", 'wp-migration-duplicator'),
                                 'export_content_empty' => __("There is nothing to backup. Please select database and / or files to backup.", 'wp-migration-duplicator'),
 			),
-                    'timestamp'=>date('Y M d h:i:s A'),
+                    'timestamp'=>date('Y M d h:i:s A'), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 		);
 		wp_localize_script($this->module_id, $this->module_id, $params);
                 $cron_settings = get_option('wt_mgdp_cron_settings', null);
@@ -1064,7 +1075,18 @@ class Wp_Migration_Duplicator_Export
 		echo '<div class="wt_exclude_folders" id ="wt_exclude_folders_deafult" >';
 		$cron = false;
 		$extensions = array();
-		echo $this->folders->php_file_tree( $wp_content, $this->exclude_items, $extensions, $cron );
+		$allowed_tags = wp_kses_allowed_html( 'post' );
+
+		$allowed_tags['input'] = array(
+			'type'    => true,
+			'name'    => true,
+			'value'   => true,
+			'checked' => true,
+			'id'      => true,
+			'class'   => true,
+		);
+
+		echo wp_kses( $this->folders->php_file_tree( $wp_content, $this->exclude_items, $extensions, $cron ), $allowed_tags );
 		echo '</div>';
 	}
         
@@ -1074,14 +1096,24 @@ class Wp_Migration_Duplicator_Export
 		echo '<div class="wt_exclude_folders" id ="wt_exclude_folders" >';
 		$cron = true;
 		$extensions = array();
-		echo $this->folders->php_file_tree( $wp_content, $this->exclude_items, $extensions, $cron );
+		$allowed_tags = wp_kses_allowed_html( 'post' );
+
+		$allowed_tags['input'] = array(
+			'type'    => true,
+			'name'    => true,
+			'value'   => true,
+			'checked' => true,
+			'id'      => true,
+			'class'   => true,
+		);
+		echo wp_kses( $this->folders->php_file_tree( $wp_content, $this->exclude_items, $extensions, $cron ), $allowed_tags );
 		echo '</div>';
 	}
 
 	function add_export_module_css()
 	{
             if(Wp_Migration_Duplicator_Security_Helper::wt_mgdp_is_screen_allowed()){
-		wp_register_style($this->module_id, plugin_dir_url(__FILE__) . 'assets/css/export.css', __FILE__);
+		wp_register_style($this->module_id, plugin_dir_url(__FILE__) . 'assets/css/export.css', __FILE__); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		wp_enqueue_style($this->module_id);
             }
 	}
@@ -1182,7 +1214,7 @@ class Wp_Migration_Duplicator_Export
           foreach ($tables as $key => $table) {
            
               $result = $mysqli->query('SELECT COUNT(*) FROM `'.$table.'` ');
-              $rows = mysqli_fetch_row($result);
+              $rows = mysqli_fetch_row($result); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_fetch_row
               $rowcount= $rows[0] ? $rows[0] :0;
                 if ($rowcount >= $row_count ) {
                     $table_array[][] = $table;
@@ -1231,8 +1263,8 @@ class Wp_Migration_Duplicator_Export
             $content_dir_size = self::wt_gets_size(WP_CONTENT_DIR);
             $total_size=0;
                 $to_exclude_items	=	$this->get_exclude_items();
-		$exclude	=	(isset($_POST['data']['exclude']) && is_array($_POST['data']['exclude']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['data']['exclude'],'text_arr') : array());
-                $content	=	(isset($_POST['data']['content']) && !empty($_POST['data']['content']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['data']['content'],'text') : '');
+		$exclude	=	(isset($_POST['data']['exclude']) && is_array($_POST['data']['exclude']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['data']['exclude'],'text_arr') : array()); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                $content	=	(isset($_POST['data']['content']) && !empty($_POST['data']['content']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['data']['content'],'text') : ''); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                 $to_exclude_items	= array_unique(array_merge($to_exclude_items, $exclude));
                  foreach ($to_exclude_items as $fkey => $file_name) {
                      if(preg_match('/[a-zA-Z]/', $file_name)){
@@ -1245,7 +1277,7 @@ class Wp_Migration_Duplicator_Export
                  $mysqli = $this->get_mysqli();
                 $q = $mysqli->query("SHOW TABLE STATUS");  
                 $db_size = 0;  
-                while($row = mysqli_fetch_array($q)) {  
+                while($row = mysqli_fetch_array($q)) {  // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_fetch_array
                     $db_size += $row["Data_length"] + $row["Index_length"];  
                 }
                 if ($content == 'files_and_db') {
@@ -1260,7 +1292,7 @@ class Wp_Migration_Duplicator_Export
                 $export_size = number_format($new_size / 1048576, 2) . ' MB ';
 		if($export_size>0) //success
 		{
-                     wp_send_json_success(__($export_size.'(unzipped) data will get backed up.', 'wp-migration-duplicator'));
+                     wp_send_json_success(__($export_size.'(unzipped) data will get backed up.', 'wp-migration-duplicator')); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
 	
                 }else{
 
@@ -1280,7 +1312,7 @@ class Wp_Migration_Duplicator_Export
 					return;
 			}   
 
-		$settings_data=(isset($_POST['settings_data']) ? Wp_Migration_Duplicator_Admin::sanitize_array($_POST['settings_data']) : null );
+		$settings_data=(isset($_POST['settings_data']) ? Wp_Migration_Duplicator_Admin::sanitize_array($_POST['settings_data']) : null ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                 
 		if(!$settings_data)
 		{
@@ -1291,7 +1323,7 @@ class Wp_Migration_Duplicator_Export
 
 		if(update_option('wt_mgdp_cadvanced_settings', $settings_data) || $advanced_settings == $settings_data) //success
 		{
-                     wp_send_json_success(__('Settings saved success!', 'wp-migration-duplicator'));
+                     wp_send_json_success(__('Settings saved success!', 'wp-migration-duplicator')); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
 	
                 }else{
 					wp_send_json_error(__('Error', 'wp-migration-duplicator'));
@@ -1328,7 +1360,7 @@ class Wp_Migration_Duplicator_Export
 					return;
 			} 
 
-		$cron_data=(isset($_POST['schedule_data']) ? Wp_Migration_Duplicator_Admin::sanitize_array($_POST['schedule_data']) : null );
+		$cron_data=(isset($_POST['schedule_data']) ? Wp_Migration_Duplicator_Admin::sanitize_array($_POST['schedule_data']) : null ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		if(!$cron_data)
 		{
 			return $out;
@@ -1343,17 +1375,17 @@ class Wp_Migration_Duplicator_Export
 		}
 		$action_type='Export';
 
-                $_POST['schedule_data']['cron_data']['export_option'] = str_replace("_schedule","",$_POST['schedule_data']['cron_data']['export_option']);
+                $_POST['schedule_data']['cron_data']['export_option'] = str_replace("_schedule","",$_POST['schedule_data']['cron_data']['export_option']); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		/* process form data */
-		$form_data=(isset($_POST['schedule_data']['cron_data']) ? $_POST['schedule_data']['cron_data'] : array());
+		$form_data=(isset($_POST['schedule_data']['cron_data']) ? $_POST['schedule_data']['cron_data'] : array()); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
 		$display_data=array(
-			'interval'=>(isset($_POST['schedule_data']['interval']) ? $_POST['schedule_data']['interval'] : ''),
-			'day_value'=>(isset($_POST['schedule_data']['day_vl']) ? $_POST['schedule_data']['day_vl'] : ''),
-			'date_value'=> (isset($_POST['schedule_data']['date_vl']) ? $_POST['schedule_data']['date_vl'] : ''),
-			'start_time'=>(isset($_POST['schedule_data']['start_time']) ? $_POST['schedule_data']['start_time'] : ''),  //next cron start time
-			'cloud_details'=>(isset($_POST['schedule_data']['cron_data']['export_option']) ? $_POST['schedule_data']['cron_data']['export_option'] : ''),  //cron settings data Eg: Cron interval type
-                        'export_type'=>(isset($_POST['schedule_data']['cron_data']['export_type']) ? $_POST['schedule_data']['cron_data']['export_type'] : ''),
+			'interval'=>(isset($_POST['schedule_data']['interval']) ? sanitize_text_field($_POST['schedule_data']['interval']) : ''), // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			'day_value'=>(isset($_POST['schedule_data']['day_vl']) ? sanitize_text_field($_POST['schedule_data']['day_vl']) : ''), // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			'date_value'=> (isset($_POST['schedule_data']['date_vl']) ? sanitize_text_field($_POST['schedule_data']['date_vl']) : ''), // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			'start_time'=>(isset($_POST['schedule_data']['start_time']) ? sanitize_text_field($_POST['schedule_data']['start_time']) : ''), // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+			'cloud_details'=>(isset($_POST['schedule_data']['cron_data']['export_option']) ? sanitize_text_field($_POST['schedule_data']['cron_data']['export_option']) : ''),  // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                        'export_type'=>(isset($_POST['schedule_data']['cron_data']['export_type']) ? sanitize_text_field($_POST['schedule_data']['cron_data']['export_type']) : ''), // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		);
 
 		$insert_data=array(
@@ -1389,9 +1421,9 @@ class Wp_Migration_Duplicator_Export
 		$time_vl=$cron_data['start_time'];
 		$tme=time();
 		//$m=date('n');
-		$M=date('M');
-		$y=date('Y');
-		$d=date('d');
+		$M=date('M'); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+		$y=date('Y'); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+		$d=date('d'); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 		//$t=date('t');
 		$out=0;
 		if($cron_data['interval']=='month')
@@ -1518,7 +1550,7 @@ class Wp_Migration_Duplicator_Export
 		{
 			$schedules['wt_mgdp_cron_interval'] = array(
 		        'interval' => (5), //1 minute
-		        'display'  =>__('Every minute'),
+		        'display'  =>__('Every minute', 'wp-migration-duplicator'),
 		    );
 		}
 		return $schedules;
@@ -1613,7 +1645,7 @@ class Wp_Migration_Duplicator_Export
                                 }
                                  if($new_out['finished']== 1)  {
                                      Webtoffe_logger::write_log( 'Export','Zip file successfully Uploaded to FTP/SFTP ' );
-                                     Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' );
+                                     Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
                                      delete_option('wp_mgdp_log_id'); 
                                     unset($update_data,$update_data);
                                     $out['data']['export_id'] = '0';

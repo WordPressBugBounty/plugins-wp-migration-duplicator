@@ -97,7 +97,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
          */
         public function out_settings_form($args)
         {
-            wp_enqueue_script($this->module_id, plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION);
+            wp_enqueue_script($this->module_id, plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
             $params = array(
                 'module_base' => $this->module_base,
                 'nonce' =>  wp_create_nonce($this->module_id),
@@ -140,7 +140,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
         function check_google_drive_option_used($out)
         {       
             $options = Wp_Migration_Duplicator::get_webtoffee_migrator_option();
-            $export_option_post = (isset($_POST['export_option'])) ? $_POST['export_option'] : $out['export_option'];
+            $export_option_post = (isset($_POST['export_option'])) ? wp_unslash($_POST['export_option']) : $out['export_option']; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $export_option_post = Wp_Migration_Duplicator_Security_Helper::sanitize_item($export_option_post);
             $cloud_storage_name = apply_filters('wt_migrator_cloud_storage_location', WT_MGDP_CLOUD_STORAGE_LOCATION);
             Webtoffe_logger::write_log( 'Export',$export_option_post .' file upload started .. ' );
@@ -161,7 +161,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                     $this->googledrive_location = $parent_id;
                     if ($client->getAccessToken()) {
                         $backup_file = WP_CONTENT_DIR . Wp_Migration_Duplicator::$backup_dir_name . "/" . $out['backup_file_name'];
-                        $file_name = (isset($_POST['google_drive_file_name']) && '' != $_POST['google_drive_file_name']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['google_drive_file_name']) : date('Y-m-d-h-i-sa', time());
+                        $file_name = (isset($_POST['google_drive_file_name']) && '' != $_POST['google_drive_file_name']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['google_drive_file_name'])) : date('Y-m-d-h-i-sa', time()); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date, WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                         $file = new Google_Service_Drive_DriveFile(array(
                             'name' => $file_name,
                             'parents' => array($parent_id)
@@ -189,7 +189,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                             // Upload the various chunks. $status will be false until the process is
                             // complete.
                             $status = false;
-                            $handle = fopen($backup_file, "rb");
+                            $handle = fopen($backup_file, "rb"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                             while (!$status && !feof($handle)) {
                                 // read until you get $chunkSizeBytes from TESTFILE
                                 // fread will never return more than 8192 bytes if the stream is read buffered and it does not represent a plain file
@@ -204,7 +204,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                             if ($status != false) {
                                 $result = $status;
                             }
-                            fclose($handle);
+                            fclose($handle); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
                             $out['status']  = true;
                             unlink($out['backup_file']);
                             $out['msg']     =  __('Successfully uploaded !!', 'wp-migration-duplicator');
@@ -223,7 +223,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                     $out['msg']     =  __('Please authenticate your google drive account', 'wp-migration-duplicator');
                     Webtoffe_logger::write_log( 'Export','Please authenticate your google drive account.' );
                 }
-                Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' );
+                Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
                     delete_option('wp_mgdp_log_id'); 
             }
             return $out;
@@ -235,7 +235,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
             $giantChunk = "";
             while (!feof($handle)) {
                 // fread will never return more than 8192 bytes if the stream is read buffered and it does not represent a plain file
-                $chunk = fread($handle, 8192);
+                $chunk = fread($handle, 8192); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
                 $byteCount += strlen($chunk);
                 $giantChunk .= $chunk;
                 if ($byteCount >= $chunkSize) {
@@ -252,8 +252,8 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
         {      
             if (isset($_POST['wt_authenticate_google_form'])) {
                 check_admin_referer($this->module_id,'_google_drive_auth');
-                $client_id      = Wp_Migration_Duplicator_Security_Helper::sanitize_item(((isset($_POST['wt_google_client_id'])) ? $_POST['wt_google_client_id'] : ''));
-                $client_secret  = Wp_Migration_Duplicator_Security_Helper::sanitize_item(((isset($_POST['wt_google_client_secret'])) ? $_POST['wt_google_client_secret'] : ''));
+                $client_id      = Wp_Migration_Duplicator_Security_Helper::sanitize_item(((isset($_POST['wt_google_client_id'])) ? wp_unslash($_POST['wt_google_client_id']) : '')); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $client_secret  = Wp_Migration_Duplicator_Security_Helper::sanitize_item(((isset($_POST['wt_google_client_secret'])) ? wp_unslash($_POST['wt_google_client_secret']) : '')); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                 $instance_id = $this->create_instance();
                 $this->callback_url = admin_url('admin.php?page=wp-migration-duplicator-settings');
                 $options = Wp_Migration_Duplicator::get_webtoffee_migrator_option();
@@ -277,7 +277,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
         public function get_client() {
             $this->callback_url = admin_url('admin.php?page=wp-migration-duplicator-settings');
             try {
-                if($sock = @fsockopen('www.google.com', 80))
+                if($sock = @fsockopen('www.google.com', 80)) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fsockopen
                 {
                     $client = new Google_Client();
                     $client->setApplicationName('Webtoffee Wordpress Migration & Backup');
@@ -299,13 +299,13 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
         }
         function authenticate_cloud()
         {       
-            if (isset( $_GET['code'] ) && isset( $_GET['state'])) {
+            if (isset( $_GET['code'] ) && isset( $_GET['state'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
                 $client = $this->get_client();
                 if( !$client) {
                     return false;
                 }
-                $code = $_GET['code'];
-                $state =  $_GET['state'];
+                $code = sanitize_text_field(wp_unslash($_GET['code'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $state =  sanitize_text_field(wp_unslash($_GET['state'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
                 $token = $client->fetchAccessTokenWithAuthCode( $code );
                 $access_token = ( isset( $token['access_token'] ) ? $token : '' );
                 if( '' !== $access_token ) {
@@ -380,13 +380,13 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
         public function wt_googledrive_ajax_authentication()
         {
             if (!Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_PLUGIN_FILENAME, $this->module_id)) {
-                wp_die(__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
+                wp_die(esc_html__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
             }
             
             if ($this->client) {
-                wp_send_json_success(__('Authentication success!', 'wp-migration-duplicator'));
+                wp_send_json_success(esc_html__('Authentication success!', 'wp-migration-duplicator'));
             }
-            wp_send_json_error(__('Authentication failed', 'wp-migration-duplicator'));
+            wp_send_json_error(esc_html__('Authentication failed', 'wp-migration-duplicator'));
         }
         /**
          * disconnect google drive
@@ -395,7 +395,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
         function disconnect_googledrive()
         {       
             if (!Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_PLUGIN_FILENAME, $this->module_id)) {
-                wp_die(__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
+                wp_die(esc_html__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
             }
             $options = Wp_Migration_Duplicator::get_webtoffee_migrator_option();
             $this->accesstoken = '';
@@ -406,7 +406,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
             $options[self::$client_id_key]='';
             $options[self::$client_secret_key]='';
             Wp_Migration_Duplicator::update_webtoffee_migrator_option($options);
-            wp_send_json_success(__('Disconnected!', 'wp-migration-duplicator'));
+            wp_send_json_success(esc_html__('Disconnected!', 'wp-migration-duplicator'));
         }
         /**
          * import options
@@ -415,7 +415,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
         function import_options($import_options)
         {
             if ($this->is_enabled()) {
-                $import_options['googledrive'] = __('Google Drive', 'wp-migration-duplicator');
+                $import_options['googledrive'] = esc_html__('Google Drive', 'wp-migration-duplicator');
             }
             return $import_options;
         }
@@ -432,7 +432,9 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                 <?php
                 $url = admin_url('admin.php?page=wp-migration-duplicator-settings#wt-googledrive');
                 ?>
-                <span class="wt-migrator-authentication-error"><?php echo sprintf(wp_kses(__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
+                <span class="wt-migrator-authentication-error"><?php
+                // translators: 1: authentication link
+                echo sprintf(wp_kses(esc_html__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
                 <table class="wf-form-table wt_mgdp_import_options " style="max-width:650px;">
                     <tbody>
                         <tr>
@@ -441,7 +443,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                             <span class="wt-cli-cloud-status wt-cli-cloud-status-enabled">
                                 <span class="dashicons dashicons-saved"></span><?php esc_html_e('(Enabled)','wp-migration-duplicator');?>
                             </span>
-                                <a  href="<?php echo esc_url(admin_url('admin.php?page=wp-migration-duplicator-settings#wt-googledrive'))?>"><?php echo esc_html__('Settings','wp-migration-duplicator-pro')?></a>
+                                <a  href="<?php echo esc_url(admin_url('admin.php?page=wp-migration-duplicator-settings#wt-googledrive'))?>"><?php echo esc_html__('Settings','wp-migration-duplicator')?></a>
                             </td>
                         </tr>
                         <tr>
@@ -472,12 +474,12 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
             if ('googledrive' != $import_method) {
                 return $import_data;
             }
-            $error_message = __('The specified file could not be found on Google drive','wp-migration-duplicator');
+            $error_message = esc_html__('The specified file could not be found on Google drive','wp-migration-duplicator');
             $import_data['message'] = $error_message;
             
-            $file_name = (isset($_POST['google_drive_file'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['google_drive_file']) : '';
+            $file_name = (isset($_POST['google_drive_file'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['google_drive_file'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             if ('' == $file_name) {
-                $import_data['message'] = __('Please specify a file to import','wp-migration-duplicator');
+                $import_data['message'] = esc_html__('Please specify a file to import','wp-migration-duplicator');
                 return $import_data;
             }
 
@@ -513,7 +515,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                         }
                         $http = $client->authorize();
 						ob_end_clean();
-                        $fp = fopen($local_file, 'w');
+                        $fp = fopen($local_file, 'w'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                         $chunkSizeBytes = 1 * 1024 * 1024;
                         $chunkStart = 0;
 
@@ -530,11 +532,11 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                                 ]
                             );
                             $chunkStart = $chunkEnd + 1;
-                            fwrite($fp, $response->getBody()->getContents());
+                            fwrite($fp, $response->getBody()->getContents()); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                         }
-                        fclose($fp);
+                        fclose($fp); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
                         $import_data['status'] = true;
-                        $import_data['message'] = __('File has fetched from the google drive, now importing the file....','wp-migration-duplicator');
+                        $import_data['message'] = esc_html__('File has fetched from the google drive, now importing the file....','wp-migration-duplicator');
                         $import_data['file'] = $local_file_url;
                         return $import_data;
                     } catch (Exception $e) {
@@ -557,7 +559,9 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                 <?php
                 $url = admin_url('admin.php?page=wp-migration-duplicator-settings#wt-googledrive');
                 ?>
-                <span class="wt-migrator-authentication-error"><?php echo sprintf(wp_kses(__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
+                <span class="wt-migrator-authentication-error"><?php
+                // translators: 1: authentication link
+                echo sprintf(wp_kses_post(__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
                 <table class="wf-form-table" style="max-width:650px;">
                     <tbody>
                         <tr>
@@ -585,7 +589,9 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                 $file_name = isset($gdrive_settings['google_drive_file_name']) && !empty($gdrive_settings['google_drive_file_name']) ? $gdrive_settings['google_drive_file_name']:'';
                 $url = admin_url('admin.php?page=wp-migration-duplicator-settings#wt-googledrive');
                 ?>
-                <span class="wt-migrator-authentication-error"><?php echo sprintf(wp_kses(__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
+                <span class="wt-migrator-authentication-error"><?php
+                // translators: 1: authentication link
+                echo sprintf(wp_kses(__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
                 <table class="wf-form-table" style="max-width:650px;">
                     <tbody>
                         <tr>

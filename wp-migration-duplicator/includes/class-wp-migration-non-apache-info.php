@@ -33,6 +33,13 @@ if (!class_exists('Wt_Mgdb_Inform_Server_Secure')) {
 			}
 			$this->ajax_action_name = $this->plugin . '_process_show_server_info_action';
 			add_action('wp_ajax_' . $this->ajax_action_name, array($this, 'process_server_info__action')); /* process banner user action */
+			add_action('init', array($this, 'load_messages'));
+		}
+
+		public function load_messages()
+		{
+			// translators: %s is the plugin title
+			$this->banner_message = sprintf( __( "The <b>%s</b> plugin uploads the imported file into <b>wp-content/webtoffee_migrations</b> folder. Please ensure that public access restrictions are set in your server for this folder.", 'wp-migration-duplicator' ), $this->plugin_title );
 		}
 
 		/**
@@ -42,13 +49,13 @@ if (!class_exists('Wt_Mgdb_Inform_Server_Secure')) {
 		{
 
 ?>
-			<div class="<?php echo $this->banner_css_class; ?> notice-warning notice is-dismissible">
+			<div class="<?php echo esc_attr($this->banner_css_class); ?> notice-warning notice is-dismissible">
 
 				<p>
-					<?php echo $this->banner_message; ?>
+					<?php echo wp_kses_post($this->banner_message); ?>
 				</p>
 				<p>
-					<?php if ((strpos($_SERVER['SERVER_SOFTWARE'], 'nginx') !== false)) : ?>
+					<?php if ((strpos($_SERVER['SERVER_SOFTWARE'], 'nginx') !== false)) : // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated ?>
 				<h4><?php esc_html_e( 'Incase of Nginx server, copy the below code into your server config file to restrict public access to the wp-content folder or contact the server team to assist accordingly.', 'wp-migration-duplicator' ); ?></h4>
 				<code>
 					#Deny access to wp-content folders<br />
@@ -87,15 +94,15 @@ if (!class_exists('Wt_Mgdb_Inform_Server_Secure')) {
 
 					/* prepare data object */
 					var data_obj = {
-						_wpnonce: '<?php echo $nonce; ?>',
-						action: '<?php echo $this->ajax_action_name; ?>',
+						_wpnonce: '<?php echo esc_attr($nonce); ?>',
+						action: '<?php echo esc_attr($this->ajax_action_name); ?>',
 						wt_action_type: 'dismiss',
 					};
 
-					$(document).on('click', '.<?php echo $this->banner_css_class; ?> .notice-dismiss', function(e) {
+					$(document).on('click', '.<?php echo esc_attr($this->banner_css_class); ?> .notice-dismiss', function(e) {
 						e.preventDefault();
 						$.ajax({
-							url: '<?php echo $ajax_url; ?>',
+							url: '<?php echo esc_url($ajax_url); ?>',
 							data: data_obj,
 							type: 'POST',
 						});
@@ -110,7 +117,7 @@ if (!class_exists('Wt_Mgdb_Inform_Server_Secure')) {
 		public function wt_get_display_server_info()
 		{
 
-			if ((strpos($_SERVER['SERVER_SOFTWARE'], 'Apache') !== false) || (strpos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') !== false)) {
+			if ((strpos($_SERVER['SERVER_SOFTWARE'], 'Apache') !== false) || (strpos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') !== false)) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 				return true;
 			} else {
 				return (bool) get_option($this->should_show_server_info);

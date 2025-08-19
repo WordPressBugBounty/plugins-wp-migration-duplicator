@@ -24,7 +24,7 @@ $wf_img_path=WT_MGDP_PLUGIN_URL.'images/';
 	    $tab_head_arr=array(
 	        //'wt-mgdp-help'=>__('Help Guide','wp-migration-duplicator')
 	    );
-	    if(isset($_GET['debug']))
+	    if(isset($_GET['debug'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	    {
 	        $tab_head_arr['wt-mgdp-debug']='Debug';
 	    }
@@ -45,12 +45,12 @@ $wf_img_path=WT_MGDP_PLUGIN_URL.'images/';
         $setting_views_b=array(          
             //'wt-mgdp-help'=>'admin-settings-help.php',           
         );
-        if(isset($_GET['debug']))
+        if(isset($_GET['debug'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         {
             $setting_views_b['wt-mgdp-debug']='admin-settings-debug.php';
         }
         ?>
-        <form method="post" action="<?php echo esc_url($_SERVER["REQUEST_URI"]);?>" class="wf_settings_form">
+        <form method="post" action="<?php echo esc_url($_SERVER["REQUEST_URI"]); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated ?>" class="wf_settings_form">
             <input type="hidden" value="plugin_settings" class="wt_mgdp_update_action" />
             <?php
             // Set nonce:

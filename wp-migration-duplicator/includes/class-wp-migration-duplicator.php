@@ -97,7 +97,7 @@ class Wp_Migration_Duplicator {
 		if ( defined( 'WP_MIGRATION_DUPLICATOR_VERSION' ) ) {
 			$this->version = WP_MIGRATION_DUPLICATOR_VERSION;
 		} else {
-			$this->version = '1.5.5';
+			$this->version = '1.5.6';
 		}
 		$this->plugin_name = 'wp-migration-duplicator';
 
@@ -182,7 +182,7 @@ class Wp_Migration_Duplicator {
 
 		$plugin_i18n = new Wp_Migration_Duplicator_i18n();
 
-		$this->loader->add_action('plugins_loaded',$plugin_i18n,'load_plugin_textdomain');
+		$this->loader->add_action('init',$plugin_i18n,'load_plugin_textdomain');
 
 	}
 
@@ -284,6 +284,7 @@ class Wp_Migration_Duplicator {
 		global $wpdb;
 		$tb=$wpdb->prefix.self::$log_tb;
 		$out=0;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$total=$wpdb->get_row("SELECT COUNT(id_wtmgdp_log) AS ttnum FROM $tb",ARRAY_A);
 		if(!empty($total) && isset($total['ttnum']))
 		{
@@ -301,6 +302,7 @@ class Wp_Migration_Duplicator {
 	{
 		global $wpdb;
 		$tb=$wpdb->prefix.self::$log_tb;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$logs=$wpdb->get_results($wpdb->prepare("SELECT * FROM $tb ORDER BY created_at DESC LIMIT %d,%d",$offset,$limit),ARRAY_A);
 		if(empty($logs))
 		{
@@ -317,6 +319,7 @@ class Wp_Migration_Duplicator {
 	{
 		global $wpdb;
 		$tb=$wpdb->prefix.self::$log_tb;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->get_row($wpdb->prepare("SELECT * FROM $tb WHERE id_wtmgdp_log=%d",$id),ARRAY_A);
 	}
 
@@ -338,6 +341,7 @@ class Wp_Migration_Duplicator {
 				$delete_where_type[]=self::$log_tb_data_type[$datak];
 			}
 		}
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->delete($tb,$delete_where,$delete_where_type);
 	}
 
@@ -370,6 +374,7 @@ class Wp_Migration_Duplicator {
 				$update_where_type[]=self::$log_tb_data_type[$datak];
 			}
 		}
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update($tb,$update_data,$update_where,$update_data_type,$update_where_type);
 		return true;
 	}
@@ -392,6 +397,7 @@ class Wp_Migration_Duplicator {
 				$insert_data_type[]=self::$log_tb_data_type[$datak];
 			}
 		}
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->insert($tb,$insert_data,$insert_data_type);
 		return $wpdb->insert_id;
 	}
@@ -406,6 +412,7 @@ class Wp_Migration_Duplicator {
 			'Failed','Completed','Incomplete','Stopped'
 		);
 		$label=(isset($status_label[$status]) ? $status_label[$status] : 'Unknown');
+		// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
 		return __($label,'wp-migration-duplicator');
 	}
 	/**
@@ -504,6 +511,7 @@ class Wp_Migration_Duplicator {
 		foreach ($files as $file) {
 			is_dir($file) ? self::wt_mgt_delete_files($file) : unlink($file);
 		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
 		rmdir($target);
 		return;
 	}

@@ -41,9 +41,9 @@ class Wt_File_Tree {
 	 */
     public function wt_file_tree_dir( $directory, $excluded_items= array(), $extensions = array(), $cron=false, $first_call = true ) {
 		// Get and sort directories/files
-                set_time_limit(0);
-                ini_set('max_execution_time', -1);
-                ini_set('memory_limit', -1);
+                set_time_limit(0); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                ini_set('max_execution_time', -1); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                ini_set('memory_limit', -1); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
 		if( function_exists("scandir") ) $file = scandir($directory); else $file = php4_scandir($directory);
 		natcasesort($file);
 		// Make directories first
@@ -76,9 +76,9 @@ class Wt_File_Tree {
 						// Directory
 						$php_file_tree .= "<li class=\"mgdp-directory\">";
 						if( true === $cron){
-							$php_file_tree .= "<input type=\"checkbox\" name=\"mgdp-exclude-file-cron\" value=\"".$input_value."\" checked/>";
+							$php_file_tree .= "<input type=\"checkbox\" name=\"mgdp-exclude-file-cron\" value=\"".$input_value."\" checked='checked'/>";
 						}else{
-							$php_file_tree .= "<input type=\"checkbox\" name=\"mgdp-exclude-file\" value=\"".$input_value."\" checked/>";
+							$php_file_tree .= "<input type=\"checkbox\" name=\"mgdp-exclude-file\" value=\"".$input_value."\" checked='checked'/>";
 						}
 						$php_file_tree .= "<a path=\"".$directory."/".$this_file."\" href=\"#\">" . htmlspecialchars($this_file) . "</a>";
 						$php_file_tree .= "</li>";
@@ -88,9 +88,9 @@ class Wt_File_Tree {
 						$file_path = "$directory/" . urlencode($this_file);
 						$php_file_tree .= "<li  class=\"pft-file " . strtolower($ext) . "\">";
 						if( true === $cron){
-							$php_file_tree .= "<input type=\"checkbox\" name=\"mgdp-exclude-file-cron\" value=\"".$input_value."\" checked/>";
+							$php_file_tree .= "<input type=\"checkbox\" name=\"mgdp-exclude-file-cron\" value=\"".$input_value."\" checked='checked'/>";
 						}else{
-							$php_file_tree .= "<input type=\"checkbox\" name=\"mgdp-exclude-file\" value=\"".$input_value."\" checked/>";
+							$php_file_tree .= "<input type=\"checkbox\" name=\"mgdp-exclude-file\" value=\"".$input_value."\" checked='checked'/>";
 						}
 						$php_file_tree .= "<a file=\"".$file_path."\" >" . htmlspecialchars($this_file) . "</a></li>";
 					}

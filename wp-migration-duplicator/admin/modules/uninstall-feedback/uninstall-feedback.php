@@ -29,7 +29,7 @@ class Wp_Migration_Duplicator_Uninstall_Feedback
 	{
 		if(array_key_exists('deactivate',$links))
 		{
-            $links['deactivate']=str_replace('<a', '<a class="'.$this->plugin_id.'-deactivate-link"',$links['deactivate']);
+            $links['deactivate']=str_replace('<a', '<a class="'.esc_attr($this->plugin_id).'-deactivate-link"',$links['deactivate']);
         }
 		return $links;
 	}
@@ -39,7 +39,7 @@ class Wp_Migration_Duplicator_Uninstall_Feedback
         $reasons = array(
             array(
                 'id' => 'used-it-successfully',
-                'text' => __('Used it successfully.'),
+                'text' => __('Used it successfully.', 'wp-migration-duplicator'),
                 'type' => 'reviewhtml',
                 'placeholder' => __('Have used it successfully and aint in need of it anymore', 'wp-migration-duplicator')
             ),
@@ -47,25 +47,25 @@ class Wp_Migration_Duplicator_Uninstall_Feedback
                 'id' => 'temporary-deactivation',
                 'text' => __('Temporary deactivation.', 'wp-migration-duplicator'),
                 'type' => 'reviewhtml',
-                'placeholder' => __('', 'wp-migration-duplicator')
+                'placeholder' => __('I am using it temporarily and will reactivate it later.', 'wp-migration-duplicator')
             ),
             array(
                 'id' => 'import-failed.',
                 'text' => __('Import failed.', 'wp-migration-duplicator'),
                 'type' => 'notworkinghtml',
-                'placeholder' => __('', 'wp-migration-duplicator')
+                'placeholder' => __('The import failed or timed out.', 'wp-migration-duplicator')
             ),
             array(
                 'id' => 'export-failed-timedout',
                 'text' => __('Export failed/timed out.', 'wp-migration-duplicator'),
                 'type' => 'notworkinghtml',
-                'placeholder' => __('', 'wp-migration-duplicator')
+                'placeholder' => __('The export failed or timed out.', 'wp-migration-duplicator')
             ),
             array(
                 'id' => 'could-not-understand',
                 'text' => __('I couldn\'t understand how to make it work.', 'wp-migration-duplicator'),
                 'type' => 'could-not-understandhtml',
-                'placeholder' => __('', 'wp-migration-duplicator')
+                'placeholder' => __('I couldn\'t understand how to use it.', 'wp-migration-duplicator')
             ),
             array(
                 'id' => 'not-what-i-was-looking-for',
@@ -99,30 +99,30 @@ class Wp_Migration_Duplicator_Uninstall_Feedback
         }
         $reasons = $this->get_uninstall_reasons();
         ?>
-        <div class="<?php echo $this->plugin_id;?>-modal" id="<?php echo $this->plugin_id;?>-modal">
-            <div class="<?php echo $this->plugin_id;?>-modal-wrap">
-                <div class="<?php echo $this->plugin_id;?>-modal-header">
+        <div class="<?php echo esc_attr($this->plugin_id);?>-modal" id="<?php echo esc_attr($this->plugin_id);?>-modal">
+            <div class="<?php echo esc_attr($this->plugin_id);?>-modal-wrap">
+                <div class="<?php echo esc_attr($this->plugin_id);?>-modal-header">
                     <h3><?php esc_html_e('If you have a moment, please let us know why you are deactivating:', 'wp-migration-duplicator'); ?></h3>
                 </div>
-                <div class="<?php echo $this->plugin_id;?>-modal-body">
+                <div class="<?php echo esc_attr($this->plugin_id);?>-modal-body">
                     <ul class="reasons"><?php foreach ($reasons as $reason) { ?>
                             <li data-type="<?php echo esc_attr($reason['type']); ?>" data-placeholder="<?php echo esc_attr($reason['placeholder']); ?>">
-                                <label><input type="radio" name="selected-reason" value="<?php echo $reason['id']; ?>"><?php echo $reason['text']; ?></label>
+                                <label><input type="radio" name="selected-reason" value="<?php echo esc_attr($reason['id']); ?>"><?php echo esc_html($reason['text']); ?></label>
                             </li><?php } ?>
                     </ul>
                 </div>
-                <div class="<?php echo $this->plugin_id;?>-modal-footer">
+                <div class="<?php echo esc_attr($this->plugin_id);?>-modal-footer">
                     <a href="#" class="dont-bother-me"><?php esc_html_e('I rather wouldn\'t say', 'wp-migration-duplicator'); ?></a>
                     <a class="button-primary" href="https://www.webtoffee.com/support/" target="_blank">
                         <span class="dashicons dashicons-external" style="margin-top:3px;"></span> 
                         <?php esc_html_e('Go to support', 'wp-migration-duplicator'); ?></a>
-                    <button class="button-primary <?php echo $this->plugin_id;?>-model-submit"><?php esc_html_e('Submit & Deactivate', 'wp-migration-duplicator'); ?></button>
-                    <button class="button-secondary <?php echo $this->plugin_id;?>-model-cancel"><?php esc_html_e('Cancel', 'wp-migration-duplicator'); ?></button>
+                    <button class="button-primary <?php echo esc_attr($this->plugin_id);?>-model-submit"><?php esc_html_e('Submit & Deactivate', 'wp-migration-duplicator'); ?></button>
+                    <button class="button-secondary <?php echo esc_attr($this->plugin_id);?>-model-cancel"><?php esc_html_e('Cancel', 'wp-migration-duplicator'); ?></button>
                 </div>
             </div>
         </div>
         <style type="text/css">
-            .<?php echo $this->plugin_id;?>-modal {
+            .<?php echo esc_attr($this->plugin_id);?>-modal {
                 position: fixed;
                 z-index: 99999;
                 top: 0;
@@ -144,28 +144,28 @@ class Wp_Migration_Duplicator_Uninstall_Feedback
                 .mgdp-review-and-deactivate{
                         padding:5px;
                     }
-            .<?php echo $this->plugin_id;?>-modal.modal-active {display: block;}
-            .<?php echo $this->plugin_id;?>-modal-wrap {
+            .<?php echo esc_attr($this->plugin_id);?>-modal.modal-active {display: block;}
+            .<?php echo esc_attr($this->plugin_id);?>-modal-wrap {
                 width: 50%;
                 position: relative;
                 margin: 10% auto;
                 background: #fff;
             }
-            .<?php echo $this->plugin_id;?>-modal-header {
+            .<?php echo esc_attr($this->plugin_id);?>-modal-header {
                 border-bottom: 1px solid #eee;
                 padding: 8px 20px;
             }
-            .<?php echo $this->plugin_id;?>-modal-header h3 {
+            .<?php echo esc_attr($this->plugin_id);?>-modal-header h3 {
                 line-height: 150%;
                 margin: 0;
             }
-            .<?php echo $this->plugin_id;?>-modal-body {padding: 5px 20px 20px 20px;}
-            .<?php echo $this->plugin_id;?>-modal-body .input-text,.<?php echo $this->plugin_id;?>-modal-body textarea {width:75%;}
-            .<?php echo $this->plugin_id;?>-modal-body .reason-input {
+            .<?php echo esc_attr($this->plugin_id);?>-modal-body {padding: 5px 20px 20px 20px;}
+            .<?php echo esc_attr($this->plugin_id);?>-modal-body .input-text,.<?php echo esc_attr($this->plugin_id);?>-modal-body textarea {width:75%;}
+            .<?php echo esc_attr($this->plugin_id);?>-modal-body .reason-input {
                 margin-top: 5px;
                 margin-left: 20px;
             }
-            .<?php echo $this->plugin_id;?>-modal-footer {
+            .<?php echo esc_attr($this->plugin_id);?>-modal-footer {
                 border-top: 1px solid #eee;
                 padding: 12px 20px;
                 text-align: right;
@@ -174,7 +174,7 @@ class Wp_Migration_Duplicator_Uninstall_Feedback
         <script type="text/javascript">
             (function ($) {
                 $(function () {
-                    var plugin_id='<?php echo $this->plugin_id;?>';
+                    var plugin_id='<?php echo esc_attr($this->plugin_id);?>';
                     var modal = $('#'+plugin_id+'-modal');
                     var deactivateLink = '';
                     $('a.'+plugin_id+'-deactivate-link').click(function (e) {
@@ -200,9 +200,15 @@ class Wp_Migration_Duplicator_Uninstall_Feedback
                                 if ('reviewhtml' === inputType && $('.reviewlink').length == 0) {
                                     var reasonInputHtml = '<div class="reason-input reviewlink"><a href="#" target="_blank" class="mgdp-review-and-deactivate"><?php esc_html_e('Deactivate and leave a review', 'wp-migration-duplicator'); ?> <span class="wt-userimport-rating-link"> &#9733;&#9733;&#9733;&#9733;&#9733; </span></a></div>';
                                 } else if ('notworkinghtml' === inputType && $('.mgdp-reviewlink').length == 0) {
-                                    var reasonInputHtml = '<div class="reason-input mgdp-reviewlink"><?php echo sprintf(wp_kses(__('To identify the potential cause of failure, check the import logs under the menu: WordPress Migration > Logs. For further assistance, contact us via <a href="%s" target="_blank">support</a>.', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://wordpress.org/support/plugin/wp-migration-duplicator/')); ?> </div>';
+                                    var reasonInputHtml = '<div class="reason-input mgdp-reviewlink"><?php 
+                                        // translators: 1: support link
+                                        echo sprintf(wp_kses(__('To identify the potential cause of failure, check the import logs under the menu: WordPress Migration > Logs. For further assistance, contact us via <a href="%s" target="_blank">support</a>.', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://wordpress.org/support/plugin/wp-migration-duplicator/')); ?> </div>';
                                 }else if ('could-not-understandhtml' === inputType && $('.mgdp-reviewlink').length == 0) {
-                                    var reasonInputHtml = '<div class="reason-input mgdp-reviewlink"><?php esc_html_e('No worries! ', 'wp-migration-duplicator'); ?><br><?php echo sprintf(wp_kses(__('Please read the <a href="%s" target="_blank">user guide</a> for a basic understanding.', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://www.webtoffee.com/wordpress-backup-migration-user-guide/')); ?><br><?php echo sprintf(wp_kses(__('For further assistance, contact us via <a href="%s" target="_blank">support</a>.', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://wordpress.org/support/plugin/wp-migration-duplicator/')); ?> </div>';
+                                    var reasonInputHtml = '<div class="reason-input mgdp-reviewlink"><?php esc_html_e('No worries! ', 'wp-migration-duplicator'); ?><br><?php 
+                                        // translators: 1: user guide link
+                                        echo sprintf(wp_kses(__('Please read the <a href="%s" target="_blank">user guide</a> for a basic understanding.', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://www.webtoffee.com/wordpress-backup-migration-user-guide/')); ?><br><?php 
+                                        // translators: 1: support link
+                                        echo sprintf(wp_kses(__('For further assistance, contact us via <a href="%s" target="_blank">support</a>.', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://wordpress.org/support/plugin/wp-migration-duplicator/')); ?> </div>';
                                 } else if ('textarea' === inputType){
                                 reasonInputHtml = '<div class="reason-input">' + (('text' === inputType) ? '<input type="text" class="input-text" size="40" />' : '<textarea rows="5" cols="45"></textarea>') + '</div>';
                                 }
@@ -248,19 +254,20 @@ class Wp_Migration_Duplicator_Uninstall_Feedback
     public function send_uninstall_reason()
     {
         global $wpdb;
-        if (!isset($_POST['reason_id'])) {
+        if (!isset($_POST['reason_id'])) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
             wp_send_json_error();
         }
         //$current_user = wp_get_current_user();
+        // Sending uninstall feedback data to webtoffe server.
         $data = array(
-            'reason_id' => sanitize_text_field($_POST['reason_id']),
+            'reason_id' => isset($_POST['reason_id']) ? sanitize_text_field(wp_unslash($_POST['reason_id'])) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
             'plugin' =>$this->plugin_id,
             'auth' =>$this->auth_key,
             'date' => gmdate("M d, Y h:i:s A"),
             'url' => '',
             'user_email' => '',
-            'reason_info' => isset($_REQUEST['reason_info']) ? trim(stripslashes($_REQUEST['reason_info'])) : '',
-            'software' => $_SERVER['SERVER_SOFTWARE'],
+            'reason_info' => isset($_REQUEST['reason_info']) ? trim(stripslashes(sanitize_text_field(wp_unslash($_REQUEST['reason_info'])))) : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            'software' => isset($_SERVER['SERVER_SOFTWARE']) ? sanitize_text_field( wp_unslash($_SERVER['SERVER_SOFTWARE'])) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
             'php_version' => phpversion(),
             'mysql_version' => $wpdb->db_version(),
             'wp_version' => get_bloginfo('version'),

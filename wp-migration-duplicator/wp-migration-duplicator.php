@@ -12,11 +12,11 @@
  * Plugin Name:       WebToffee WP Backup and Migration
  * Plugin URI:        https://wordpress.org/plugins/wp-migration-duplicator/
  * Description:       Migrate WordPress contents and database quickly with ease.
- * Version:           1.5.5
+ * Version:           1.5.6
  * Author:            WebToffee
  * Author URI:        https://www.webtoffee.com/
- * License:           GPL-2.0+
- * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * License:           GPL-3.0+
+ * License URI:       http://www.gnu.org/licenses/gpl-3.0.txt
  * Text Domain:       wp-migration-duplicator
  * Domain Path:       /languages
  */
@@ -40,7 +40,7 @@ if(!defined('WP_MIGRATION_DUPLICATOR_VERSION')) //check plugin file already incl
     /**
      * Currently plugin version.
      */
-    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.5.5' );
+    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.5.6' );
 }
 if ( !defined( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT' ) ) {
 	define( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT', 'https://www.webtoffee.com/finding-php-error-logs-in-migrator-plugin/' );
@@ -52,7 +52,8 @@ if ( !defined( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT' ) ) {
  */
 function activate_wp_migration_duplicator() {
     if (is_plugin_active('wp-migration-duplicator-pro/wp-migration-duplicator-pro.php')) {
-        wp_die(__("Is everything fine? You already have the Premium version installed in your website. For any issues, kindly raise a ticket via <a target='_blank' href='https://www.webtoffee.com/support/'>support</a>", "wp-migration-duplicator"), "", array('back_link' => 1));
+        // translators: 1: support link
+        wp_die(sprintf(esc_html__("Is everything fine? You already have the Premium version installed in your website. For any issues, kindly raise a ticket via %s", "wp-migration-duplicator"), "<a target='_blank' href='https://www.webtoffee.com/support/'>support</a>"), "", array('back_link' => 1));
     }else{
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wp-migration-duplicator-activator.php';
 	Wp_Migration_Duplicator_Activator::activate();
@@ -106,11 +107,11 @@ add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wt_wp_migrati
 function wt_wp_migration_duplicator_plugin_action_links_basic( $links ) {
 
     $plugin_links = array(
-		'<a href="' . admin_url( 'admin.php?page=wp-migration-duplicator' ) . '">' . __( 'Settings' ) . '</a>',
-		'<a href="https://www.webtoffee.com/wordpress-backup-migration-user-guide/" target="_blank">' . __( 'Documentation' ) . '</a>',
-                '<a href="https://wordpress.org/support/plugin/wp-migration-duplicator/" target="_blank">' . __('Support') . '</a>',
-                '<a href="https://www.webtoffee.com/plugins/" target="_blank"  style="color:#3db634;">' . __('Premium Plugins') . '</a>',
-                '<a target="_blank" style="color:#f909ff;" href="https://wordpress.org/support/plugin/wp-migration-duplicator/reviews#new-post">' . __('Review') . '</a>',
+		'<a href="' . admin_url( 'admin.php?page=wp-migration-duplicator' ) . '">' . esc_html__( 'Settings', 'wp-migration-duplicator' ) . '</a>',
+		'<a href="https://www.webtoffee.com/wordpress-backup-migration-user-guide/" target="_blank">' . esc_html__( 'Documentation', 'wp-migration-duplicator' ) . '</a>',
+                '<a href="https://wordpress.org/support/plugin/wp-migration-duplicator/#new-topic-0" target="_blank">' . esc_html__( 'Support', 'wp-migration-duplicator' ) . '</a>',
+                '<a href="https://www.webtoffee.com/plugins/" target="_blank"  style="color:#3db634;">' . esc_html__( 'Premium Plugins', 'wp-migration-duplicator' ) . '</a>',
+                '<a target="_blank" style="color:#f909ff;" href="https://wordpress.org/support/plugin/wp-migration-duplicator/reviews#new-post">' . esc_html__( 'Review', 'wp-migration-duplicator' ) . '</a>',
             );
 
 	if ( array_key_exists( 'deactivate', $links ) ) {
@@ -123,7 +124,6 @@ function wt_wp_migration_duplicator_plugin_action_links_basic( $links ) {
 include_once plugin_dir_path( __FILE__ ) . 'includes/class-wp-migration-non-apache-info.php';
 $inform_server_secure					 = new Wt_Mgdb_Inform_Server_Secure( 'Migration' );
 $inform_server_secure->plugin_title		 = "WebToffee WP Backup and Migration";
-$inform_server_secure->banner_message	 = sprintf( __( "The <b>%s</b> plugin uploads the imported file into <b>wp-content/webtoffee_migrations</b> folder. Please ensure that public access restrictions are set in your server for this folder." ), $inform_server_secure->plugin_title );
 
 /**
 * Missing plugins warning.
@@ -138,8 +138,8 @@ if(!function_exists('wt_missing_plugins_warning')){
             if(!extension_loaded('zip') && !extension_loaded('zlib')){
                 /* Display the notice*/
                 $class = 'notice notice-error';
-                $message = sprintf(__('<b>WebToffee WP Backup and Migration</b> has been activated. To ensure proper functioning, kindly enable the <b>ZipArchive extension</b> in server. '));
-               printf( '<div class="%s"><p>%s</p></div>', esc_attr( $class ), ( $message ) );
+                // translators: 1:  opening bold tag, 2: closing bold tag, 3: opening bold tag, 4: closing bold tag                
+               printf( '<div class="%s"><p>%s</p></div>', esc_attr( $class ), ( sprintf(esc_html__('%1$s WebToffee WP Backup and Migration %2$s has been activated. To ensure proper functioning, kindly enable the %3$s ZipArchive extension %4$s in server. ', 'wp-migration-duplicator'), '<b>', '</b>', '<b>', '</b>')) );
 
             }
         }

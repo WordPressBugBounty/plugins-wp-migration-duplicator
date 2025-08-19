@@ -180,15 +180,15 @@ if (is_dir(Wp_Migration_Duplicator::$backup_dir)) {
                                 </a>
                                 <?php
                             } else {
-                                echo esc_attr($file_name) . ' <span style="color:red; display:inline;">(' . __('File not found', 'wp-migration-duplicator') . ')</span>';
+                                echo esc_attr($file_name) . ' <span style="color:red; display:inline;">(' . esc_html__('File not found', 'wp-migration-duplicator') . ')</span>';
                             }
                             ?>
                         </td>
-                        <td><?php echo date('Y-m-d h:i:s A', esc_attr($backup['created_at'])); ?></td>
+                        <td><?php echo esc_html(date('Y-m-d h:i:s A', esc_attr($backup['created_at']))); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date ?></td>
                         <td>
                             <?php
                             if ($file_exists) {
-                                echo Wp_Migration_Duplicator::format_size_units(filesize($file_path));
+                                echo wp_kses_post(Wp_Migration_Duplicator::format_size_units(filesize($file_path)));
                             }
                             ?>
                         </td>
@@ -199,7 +199,7 @@ if (is_dir(Wp_Migration_Duplicator::$backup_dir)) {
                         </td>
                         <td>
                             <?php
-                            echo Wp_Migration_Duplicator::get_status_label(esc_attr($backup['status']));
+                            echo wp_kses_post(Wp_Migration_Duplicator::get_status_label(esc_attr($backup['status'])));
                             ?>
                         </td>
                         <td>
@@ -215,7 +215,7 @@ if (is_dir(Wp_Migration_Duplicator::$backup_dir)) {
                     </tr>
                     <?php
                 }
-                $no_bckup_html = '<tr><td colspan="8" style="text-align:center; padding:10px">' . __('No backups found.', 'wp-migration-duplicator') . '</td></tr>';
+                $no_bckup_html = '<tr><td colspan="8" style="text-align:center; padding:10px">' . esc_html__('No backups found.', 'wp-migration-duplicator') . '</td></tr>';
                 if (count($backup_list) == 0) {
                     echo wp_kses_post($no_bckup_html);
                 }
@@ -235,7 +235,7 @@ if (is_dir(Wp_Migration_Duplicator::$backup_dir)) {
             <a  href="#"><?php echo esc_html__('Import', 'wp-migration-duplicator'); ?></a>
             <div class="wt-migrator-accordion-content" style ="border-top: 2px dotted #b6b6b7;">
 
-                <p><?php esc_html_e('Select the location from where you want to import the zip file.'); ?></p>
+                <p><?php esc_html_e('Select the location from where you want to import the zip file.', 'wp-migration-duplicator'); ?></p>
 
                 <table class="wf-form-table wt_mgdp_import_options" style="max-width:650px;">
                     <tr class="wt_mgdp_import_er" style="display:none;">

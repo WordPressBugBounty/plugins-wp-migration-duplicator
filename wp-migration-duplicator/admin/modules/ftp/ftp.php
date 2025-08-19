@@ -89,8 +89,8 @@ if (!class_exists('Wp_Migration_Profile')) {
          */
         public function out_settings_form($args)
         {
-            wp_enqueue_script(self::$module_id, plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION);
-            wp_enqueue_script('admin_basejs', WT_MGDP_PLUGIN_URL . 'admin/js/wp-migration-duplicator-admin.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION);
+            wp_enqueue_script(self::$module_id, plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
+            wp_enqueue_script('admin_basejs', WT_MGDP_PLUGIN_URL . 'admin/js/wp-migration-duplicator-admin.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
             $params = array(
                 'nonces'    => array(
                     'main'  =>  wp_create_nonce(self::$module_id),
@@ -106,8 +106,9 @@ if (!class_exists('Wp_Migration_Profile')) {
                     'wait'          =>  __('Please wait...', 'wp-migration-duplicator'),
                     'delete'        =>  __('Delete', 'wp-migration-duplicator'),
                     'success'       =>  __('Success', 'wp-migration-duplicator'),
-                    'some_mandatory'=>  __('Please fill mandatory fields'),
-                    'error' => sprintf(__('An unknown error has occurred! Refer to our %stroubleshooting guide%s for assistance.'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
+                    'some_mandatory'=>  __('Please fill mandatory fields', 'wp-migration-duplicator'),
+                    // translators: 1: troubleshooting guide link, 2: closing anchor tag
+                    'error' => sprintf(__('An unknown error has occurred! Refer to our %1$s troubleshooting guide %2$s for assistance.', 'wp-migration-duplicator'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
 
                 )
             );
@@ -148,6 +149,7 @@ if (!class_exists('Wp_Migration_Profile')) {
         {
             global $wpdb;
             $tb     =   $wpdb->prefix . Wp_Migration_Duplicator::$ftp_tb;
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $val    =   $wpdb->get_results("SELECT * FROM $tb ORDER BY id DESC", ARRAY_A);
             if ($val) {
                 return $val;
@@ -162,7 +164,8 @@ if (!class_exists('Wp_Migration_Profile')) {
          */
         public function ajax_main()
         {
-            $action = (isset($_POST['wt_mgdp_update_action']) ? sanitize_text_field($_POST['wt_mgdp_update_action']) : '');
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $action = (isset($_POST['wt_mgdp_update_action']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_update_action'])) : '');
             $out = array(
                 'status' => false,
                 'msg' => __('Error', 'wp-migration-duplicator'),
@@ -199,21 +202,30 @@ if (!class_exists('Wp_Migration_Profile')) {
           
         public function wt_mgdp_test_ftp_ajax() {
 
-                if(isset($_POST['is_sftp']) && $_POST['is_sftp'] == 1 && $_POST['ftpport']!=21 ) /* sftp */
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            if (!Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_POST_TYPE, self::$module_id)) {
+                echo json_encode(array('status' => false, 'msg' => esc_html__('Error', 'wp-migration-duplicator')));
+                exit();
+            }            
+                if(isset($_POST['is_sftp']) && $_POST['is_sftp'] == 1 && isset($_POST['ftpport']) && $_POST['ftpport']!=21 ) // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		{
 			include_once "classes/class-sftp.php";
 			$sftp=new Wt_mgdp_Sftp();
-                        $out = array();
-			$out=$sftp->test_sftp($_POST, $out);
+                        $out = array();                        
+			$out=$sftp->test_sftp($_POST, $out); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return $out;
 		}else{
-            
-                        $ftp_conn = @ftp_connect($_POST['host'], $_POST['ftpport']);
+                        
+            $host = (isset($_POST['host']) ? sanitize_text_field(wp_unslash($_POST['host'])) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $ftpport = (isset($_POST['ftpport']) ? intval($_POST['ftpport']) : 21); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $user_name = (isset($_POST['user_name']) ? sanitize_text_field(wp_unslash($_POST['user_name'])) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $password = (isset($_POST['password']) ? sanitize_text_field(wp_unslash($_POST['password'])) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                        $ftp_conn = @ftp_connect($host, $ftpport);
                         if ($ftp_conn == false) {
                             $out= __("Could not connect to Host. Server host / IP or Port may be wrong.", 'wp-migration-duplicator');
                             return wp_send_json_error($out);
                         }
-                        if (@ftp_login($ftp_conn, $_POST['user_name'], $_POST['password'])) {
+                        if (@ftp_login($ftp_conn, $user_name, $password)) {
                             $out = __("Successfully logged in.", 'wp-migration-duplicator');
 
                             return wp_send_json_success($out);
@@ -232,29 +244,29 @@ if (!class_exists('Wp_Migration_Profile')) {
          */
          private function save_ftp($out)
         {
+            // Nonce is handled in the callback function call
             $ftp_form_fields = array('wt_mgdp_profilename', 'wt_mgdp_hostname', 'wt_mgdp_ftpuser', 'wt_mgdp_ftppassword', 'wt_mgdp_ftpport','wt_mgdp_useftps','wt_mgdp_passivemode','wt_mgdp_is_sftp', 'wt_mgdp_ftpexport_path', 'wt_mgdp_ftpimport_path');
-
             foreach ($ftp_form_fields as $ftp_form_field) {
-                $val    = (isset($_POST[$ftp_form_field]) ? sanitize_text_field($_POST[$ftp_form_field]) : '');
+                $val    = (isset($_POST[$ftp_form_field]) ? sanitize_text_field(wp_unslash($_POST[$ftp_form_field])) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                 if ($val == "") {
-                    $out['msg']     = __("All fields are mandatory", 'wp-migration-duplicator');
+                    $out['msg']     = esc_html__("All fields are mandatory", 'wp-migration-duplicator');
                     $out['status']  = false;
                     break;
                 }
             }
-            $id = (isset($_POST['wt_mgdp_ftp_id']) ? intval($_POST['wt_mgdp_ftp_id']) : 0);
-            $name = (isset($_POST['wt_mgdp_profilename']) ? sanitize_text_field($_POST['wt_mgdp_profilename']) : '');
+            $id = (isset($_POST['wt_mgdp_ftp_id']) ? intval($_POST['wt_mgdp_ftp_id']) : 0); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $name = (isset($_POST['wt_mgdp_profilename']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_profilename'])) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
             if ($out['status']) //no validation error, ftp edit call, check for duplcate name.
             {
                 $ftp_data   =   $this->get_ftp_data_by_name($name);
                 if (count($ftp_data) > 1) {
-                    $out['msg'] = __("FTP profile with same name already exists.", 'wp-migration-duplicator');
+                    $out['msg'] = esc_html__("FTP profile with same name already exists.", 'wp-migration-duplicator');
                     $out['status'] = false;
                     return $out;
                 } else {
                     if (isset($ftp_data[0]['id']) && $ftp_data[0]['id'] != $id) /* profile with same name exists */ {
-                        $out['msg'] = __("FTP profile with same name already exists.", 'wp-migration-duplicator');
+                        $out['msg'] = esc_html__("FTP profile with same name already exists.", 'wp-migration-duplicator');
                         $out['status'] = false;
                         return $out;
                     }
@@ -264,15 +276,15 @@ if (!class_exists('Wp_Migration_Profile')) {
             if ($out['status']) {
                 $db_data = array(
                     'name'          => stripslashes($name),
-                    'server'        => sanitize_text_field($_POST['wt_mgdp_hostname']),
-                    'user_name'     => sanitize_text_field($_POST['wt_mgdp_ftpuser']),
-                    'password'      => sanitize_text_field($_POST['wt_mgdp_ftppassword']),
-                    'port'          => sanitize_text_field($_POST['wt_mgdp_ftpport']),            
-                    'export_path'   => sanitize_text_field($_POST['wt_mgdp_ftpexport_path']),
-                    'import_path'   => sanitize_text_field($_POST['wt_mgdp_ftpimport_path']),
-                    'ftps'          =>sanitize_text_field($_POST['wt_mgdp_useftps']),
-                    'is_sftp'       =>sanitize_text_field($_POST['wt_mgdp_is_sftp']),
-                    'passive_mode'  =>sanitize_text_field($_POST['wt_mgdp_passivemode']),
+                    'server'        => isset($_POST['wt_mgdp_hostname']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_hostname'])) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    'user_name'     => isset($_POST['wt_mgdp_ftpuser']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_ftpuser'])) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    'password'      => isset($_POST['wt_mgdp_ftppassword']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_ftppassword'])) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    'port'          => isset($_POST['wt_mgdp_ftpport']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_ftpport'])) : 21, // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    'export_path'   => isset($_POST['wt_mgdp_ftpexport_path']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_ftpexport_path'])) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    'import_path'   => isset($_POST['wt_mgdp_ftpimport_path']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_ftpimport_path'])) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    'ftps'          =>isset($_POST['wt_mgdp_useftps']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_useftps'])) : 0, // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    'is_sftp'       =>isset($_POST['wt_mgdp_is_sftp']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_is_sftp'])) : 0, // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    'passive_mode'  =>isset($_POST['wt_mgdp_passivemode']) ? sanitize_text_field(wp_unslash($_POST['wt_mgdp_passivemode'])) : 0, // phpcs:ignore WordPress.Security.NonceVerification.Missing
                 );
                 $db_data_type   = array('%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%d', '%d');
                 if ($id > 0) {
@@ -297,7 +309,9 @@ if (!class_exists('Wp_Migration_Profile')) {
         {
             global $wpdb;
             $tb     =   $wpdb->prefix . Wp_Migration_Duplicator::$ftp_tb;
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $qry    =   $wpdb->prepare("SELECT * FROM $tb WHERE name=%s", array($name));
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $val    =   $wpdb->get_results($qry, ARRAY_A);
             if ($val) {
                 return $val;
@@ -314,7 +328,9 @@ if (!class_exists('Wp_Migration_Profile')) {
         {
             global $wpdb;
             $tb     =   $wpdb->prefix . Wp_Migration_Duplicator::$ftp_tb;
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $qry    =   $wpdb->prepare("SELECT * FROM $tb WHERE id=%d", array($id));
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $val    =   $wpdb->get_row($qry, ARRAY_A);
             if ($val) {
                 return $val;
@@ -332,6 +348,7 @@ if (!class_exists('Wp_Migration_Profile')) {
         {
             global $wpdb;
             $tb     =   $wpdb->prefix . Wp_Migration_Duplicator::$ftp_tb;
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery
             if ($wpdb->insert($tb, $insert_data, $insert_data_type)) {
                 return $wpdb->insert_id;
             }
@@ -352,6 +369,7 @@ if (!class_exists('Wp_Migration_Profile')) {
             $update_where_type  = array(
                 '%d'
             );
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             if ($wpdb->update($tb, $update_data, $update_where, $update_data_type, $update_where_type) !== false) {
                 return true;
             }
@@ -363,13 +381,14 @@ if (!class_exists('Wp_Migration_Profile')) {
          */
         public function delete_ftp($out)
         {
-            $id =   (isset($_POST['wp_migration_duplicator_ftp_id']) ? intval($_POST['wp_migration_duplicator_ftp_id']) : 0);
+            $id =   (isset($_POST['wp_migration_duplicator_ftp_id']) ? intval(wp_unslash($_POST['wp_migration_duplicator_ftp_id'])) : 0); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             if ($id > 0) {
                 global $wpdb;
                 $tb     = $wpdb->prefix . Wp_Migration_Duplicator::$ftp_tb;
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->delete($tb, array('id' => $id), array('%d'));
             } else {
-                $out['msg'] = __("Error", 'wp-migration-duplicator');
+                $out['msg'] = esc_html__("Error", 'wp-migration-duplicator');
                 $out['status'] = false;
             }
             return $out;
@@ -382,7 +401,7 @@ if (!class_exists('Wp_Migration_Profile')) {
         private function get_possible_export_methos()
         {
             $export_methods = array(
-                'local' => __('Local', 'wp-migration-duplicator')
+                'local' => esc_html__('Local', 'wp-migration-duplicator')
             );
             return apply_filters('wt_mgdb_export_options', $export_methods);
         }
@@ -567,25 +586,26 @@ if (!class_exists('Wp_Migration_Profile')) {
          */
         public function check_ftp_export_option_used($out)
         {
-            $export_option_post = (isset($_POST['export_option'])) ? $_POST['export_option'] : $out['export_option'];
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $export_option_post = (isset($_POST['export_option'])) ? wp_unslash($_POST['export_option']) : $out['export_option'];
             $export_option_post = Wp_Migration_Duplicator_Security_Helper::sanitize_item( $export_option_post );
             Webtoffe_logger::write_log( 'Export',$export_option_post .' file upload started .. ' );
             if ('ftp' == $export_option_post) {
                 $out['export_option'] = 'ftp';
-                $ftp_profile = (isset($_POST['ftp_profile'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['ftp_profile'],'int') : 0;
+                $ftp_profile = (isset($_POST['ftp_profile'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['ftp_profile']),'int') : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
                 if (0 == $ftp_profile) {
                     $out['status'] = false;
-                    $out['msg'] = __('Please choose profile', 'wp-migration-duplicator');
+                    $out['msg'] = esc_html__('Please choose profile', 'wp-migration-duplicator');
                     return $out;
                 }
                 
-                $ftp_path   = (isset($_POST['ftp_path'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['ftp_path']) : '';     
+                $ftp_path   = (isset($_POST['ftp_path'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['ftp_path'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                 $ftp_details = $this->get_ftp_data_by_id($ftp_profile);
                
                 if (empty($ftp_details)) {
                     $out['status']  = false;
-                    $out['msg']     =  __('Please choose profile', 'wp-migration-duplicator');
+                    $out['msg']     =  esc_html__('Please choose profile', 'wp-migration-duplicator');
                     return $out;
                 }
                 $ftp_server = $ftp_details['server'];
@@ -595,7 +615,7 @@ if (!class_exists('Wp_Migration_Profile')) {
                 $wt_is_sftp   = $ftp_details['is_sftp'];
 
                  
-                 $file       = (isset($_POST['ftp_file']) && '' !== $_POST['ftp_file']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(rtrim($_POST['ftp_file'],'.zip')).'.zip' : $out['backup_file'];
+                 $file       = (isset($_POST['ftp_file']) && '' !== $_POST['ftp_file']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(rtrim(wp_unslash($_POST['ftp_file']),'.zip')).'.zip' : $out['backup_file']; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                  $local_file = WP_CONTENT_DIR . Wp_Migration_Duplicator::$backup_dir_name . "/" . $out['backup_file_name'];//$out['backup_file'];
                 $remote_file = (substr($ftp_path, -1) != '/') ? ($ftp_path . "/" . basename($file)) : ($ftp_path . basename($file));
 
@@ -739,9 +759,9 @@ if (!class_exists('Wp_Migration_Profile')) {
             $local_file_url = content_url() . Wp_Migration_Duplicator::$backup_dir_name . '/temp-import-file.zip';
             $local_file = Wp_Migration_Duplicator::$backup_dir . '/temp-import-file.zip';
 
-            $ftp_profile    = (isset($_POST['ftp_profile'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['ftp_profile'],'int') : 0;
-            $ftp_path       = (isset($_POST['ftp_path'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['ftp_path']) : '';
-            $ftp_file       = (isset($_POST['ftp_file'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['ftp_file']) : '';
+            $ftp_profile    = (isset($_POST['ftp_profile'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['ftp_profile']),'int') : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $ftp_path       = (isset($_POST['ftp_path'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['ftp_path'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $ftp_file       = (isset($_POST['ftp_file'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['ftp_file'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             if (0 == $ftp_profile || '' == $ftp_path) {
                 $import_data['message'] = __('Please choose a FTP profile', 'wp-migration-duplicator');
                 return $import_data;
@@ -813,7 +833,7 @@ if (!class_exists('Wp_Migration_Profile')) {
 
         function enable_disabe_ftp()
         {
-            $is_enabled = wp_validate_boolean( (isset($_POST['is_enabled'])) ? $_POST['is_enabled'] : true );
+            $is_enabled = wp_validate_boolean( (isset($_POST['is_enabled'])) ? wp_unslash($_POST['is_enabled']) : true ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $options = Wp_Migration_Duplicator::get_webtoffee_migrator_option();
             $options[$this->module_base.'_'.'status'] = $is_enabled;
             Wp_Migration_Duplicator::update_webtoffee_migrator_option($options);
@@ -838,11 +858,11 @@ if (!class_exists('Wp_Migration_Profile')) {
         */
         public function get_existing_backups() {
             if ( ! Wp_Migration_Duplicator_Security_Helper::check_write_access( WT_MGDP_PLUGIN_FILENAME, WT_MGDP_PLUGIN_FILENAME ) ) {
-                wp_die(__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator-pro')); 
+                wp_die(esc_html__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator')); 
             }
-            $error_message = __('Please choose an FTP profile', 'wp-migration-duplicator'); 
-            $ftp_profile = (isset($_POST['ftp_profile']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['ftp_profile']) : '');
-            $ftp_path = (isset($_POST['ftp_path']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['ftp_path']) : '/');
+            $error_message = esc_html__('Please choose an FTP profile', 'wp-migration-duplicator'); 
+            $ftp_profile = (isset($_POST['ftp_profile']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['ftp_profile'])) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $ftp_path = (isset($_POST['ftp_path']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item(wp_unslash($_POST['ftp_path'])) : '/'); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
             if ('' == $ftp_profile)  {
                 wp_send_json_error( $error_message );
@@ -857,15 +877,16 @@ if (!class_exists('Wp_Migration_Profile')) {
             $password   = ( isset( $ftp_details['password'] ) ? $ftp_details['password'] : '' );
             $ftp_conn = $this->establish_connection_ftp($ftp_server, $ftp_port, $username, $password);
             $file_names = array();
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_init
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "ftp://$ftp_server".$ftp_path);
-            curl_setopt($ch, CURLOPT_PORT, $ftp_port);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_USERPWD, $username.":".$password);
-            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-            curl_setopt($ch, CURLOPT_DIRLISTONLY, TRUE);
-            $files_list = curl_exec($ch);
-            curl_close($ch);
+            curl_setopt($ch, CURLOPT_URL, "ftp://$ftp_server".$ftp_path); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt
+            curl_setopt($ch, CURLOPT_PORT, $ftp_port); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt
+            curl_setopt($ch, CURLOPT_USERPWD, $username.":".$password); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt
+            curl_setopt($ch, CURLOPT_DIRLISTONLY, TRUE); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt
+            $files_list = curl_exec($ch); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_exec
+            curl_close($ch); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_close
         
             // The list of all files names on folder
             $file_names_array= explode("\n", $files_list);

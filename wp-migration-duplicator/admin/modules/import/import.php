@@ -77,7 +77,7 @@ class Wp_Migration_Duplicator_Import
                 return;
         }  
 
-		$settings_data=(isset($_POST['settings_data']) ? Wp_Migration_Duplicator_Admin::sanitize_array($_POST['settings_data']) : null );
+		$settings_data=(isset($_POST['settings_data']) ? Wp_Migration_Duplicator_Admin::sanitize_array($_POST['settings_data']) : null );// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                 
 		if(!$settings_data)
 		{
@@ -156,9 +156,9 @@ class Wp_Migration_Duplicator_Import
 					return;
 			} 
               
-		ini_set('memory_limit', '-1');
-		set_time_limit(0);
-		$action = sanitize_text_field($_POST['sub_action']);
+		ini_set('memory_limit', '-1'); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+		set_time_limit(0); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+		$action = isset($_POST['sub_action']) ? sanitize_text_field(wp_unslash($_POST['sub_action'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		$out = array(
 			'status' => false,
 			'msg' => __('Error', 'wp-migration-duplicator'),
@@ -173,7 +173,7 @@ class Wp_Migration_Duplicator_Import
 			exit();
 		}
 		if (in_array($action, $this->ajax_action_list) && method_exists($this, $action)) {
-                    $this->export_id=(isset($_POST['export_id']) ? intval($_POST['export_id']) : 0);
+                    $this->export_id=(isset($_POST['export_id']) ? intval($_POST['export_id']) : 0); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$out = $this->{$action}($out);
 		} else {
 			//error
@@ -206,16 +206,16 @@ class Wp_Migration_Duplicator_Import
 	 */
 	private function import_db($out)
 	{
-               ini_set('mysql.connect_timeout', 3000);
-               ini_set('default_socket_timeout', 3000); 
+               ini_set('mysql.connect_timeout', 3000); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+               ini_set('default_socket_timeout', 3000); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
                 if(file_exists(Wp_Migration_Duplicator::$backup_dir . '/import_db_path_details.json')){
                     $path_Array = json_decode(file_get_contents(Wp_Migration_Duplicator::$backup_dir . '/import_db_path_details.json'), true);
                 }else{
                     Webtoffe_logger::write_log( 'Import','Path file missing.' );
 		   return $out; //error
                 }
-                $offset = intval($_POST['offset']);
-		$limit = intval($_POST['limit']);
+                $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$limit = isset($_POST['limit']) ? intval($_POST['limit']) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                 $total_checkpoints = count($path_Array);
 		global $wpdb;
                  //Webtoffe_logger::write_log( 'Import','$offset'. serialize($_POST) );
@@ -237,14 +237,14 @@ class Wp_Migration_Duplicator_Import
 		} */
 		/*  check DB connection is possible */
                 
-                $connection = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-		@mysqli_query($connection, "SET FOREIGN_KEY_CHECKS = 0;");
-                @mysqli_query($connection, "SET SESSION sql_mode = ''");
-                @mysqli_query($connection, "set session wait_timeout=40000");
+                $connection = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_connect
+		@mysqli_query($connection, "SET FOREIGN_KEY_CHECKS = 0;"); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
+                @mysqli_query($connection, "SET SESSION sql_mode = ''"); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
+                @mysqli_query($connection, "set session wait_timeout=40000"); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
               // @mysqli_query($this->dbh, "SET wait_timeout = ".mysqli_real_escape_string($this->dbh, $GLOBALS['DB_MAX_TIME']));
               //@mysqli_query($this->dbh, "SET max_allowed_packet = ".mysqli_real_escape_string($this->dbh, $GLOBALS['DB_MAX_PACKETS']));
 
-		$mysql_version = substr(mysqli_get_server_info($connection), 0, 3); // Get Mysql Version
+		$mysql_version = substr(mysqli_get_server_info($connection), 0, 3); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_get_server_info
                 
                 $find = array();
 		$replace = array();
@@ -284,7 +284,7 @@ class Wp_Migration_Duplicator_Import
                     }
                    
                 }
-		if (mysqli_connect_errno()) {
+		if (mysqli_connect_errno()) { // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_connect_errno
                         Webtoffe_logger::write_log( 'Import','Unable to connect to database.' );
 			$out['msg'] = __('Unable to connect to database.', 'wp-migration-duplicator');
 			$out['sub_label'] = '<br /><span style="color:red;">' . $out['msg'] . '</span>';
@@ -312,7 +312,7 @@ class Wp_Migration_Duplicator_Import
                             $templine = '';
                             $error_count = 0;
                             $non_error_count = 0;
-                            $fp = fopen($filename, 'r');
+                            $fp = fopen($filename, 'r'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                             // Loop through each line
                             while (($line = fgets($fp)) !== false) {
                                     // Skip it if it's a comment
@@ -337,7 +337,7 @@ class Wp_Migration_Duplicator_Import
                                             }
                                             $templine = trim($templine);
                                             // Perform the query
-                                            if (!mysqli_query($connection, trim($templine))) {
+                                            if (!mysqli_query($connection, trim($templine))) { // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
                                                 $error_count++;
                                                     Webtoffe_logger::error($connection->error);
                                                     Webtoffe_logger::error($filename);
@@ -354,20 +354,24 @@ class Wp_Migration_Duplicator_Import
                             }
 
                            
-                            fclose($fp);
-                            unlink($filename);
+                            fclose($fp); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+                            unlink($filename); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_unlink
                         }
                         if ($non_error_count == 0) {
                                     Webtoffe_logger::write_log( 'Import','checkpoint '.$total_imported_checkpoints.' import failed.' );
+                                    // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
                                     $out['msg'] = __('checkpoint '.$total_imported_checkpoints.' import failed.', 'wp-migration-duplicator');
                                     $out['sub_label'] = '<br /><span style="color:red;">' . $out['msg'] . '</span>';
                             } else {
                                     if ($error_count > 0) {
                                             Webtoffe_logger::write_log( 'Import','Some queries in checkpoint '.$total_imported_checkpoints.' not executed properly' );
+                                            // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
                                             $out['msg'] = __('Some queries in checkpoint '.$total_imported_checkpoints.' not executed properly', 'wp-migration-duplicator');
+                                            // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
                                             $out['sub_label'] =  '<br />' . $out['msg'] . '<br />' . __('Checkpoint '.$total_imported_checkpoints.' Import completed.', 'wp-migration-duplicator');
                                     } else {
                                             Webtoffe_logger::write_log( 'Import',$total_imported_checkpoints. " out of " . $total_checkpoints .' Checkpoint imported.' );
+                                            // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
                                             $out['msg'] = __($total_imported_checkpoints. " out of " . $total_checkpoints .' Checkpoints imported.', 'wp-migration-duplicator');
                                             $out['sub_label'] = '<br />' . $out['msg'];
                                             $out['label'] = '';
@@ -375,16 +379,16 @@ class Wp_Migration_Duplicator_Import
                             }
                     }
                 }
-                    @mysqli_query($connection, "SET FOREIGN_KEY_CHECKS = 1;");
-                    @mysqli_close($connection);
+                    @mysqli_query($connection, "SET FOREIGN_KEY_CHECKS = 1;"); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
+                    @mysqli_close($connection); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_close
                     $new_offset = $offset + $limit;
                     
                     if ($total_checkpoints <= $new_offset) {
-                        if(isset($_POST['attachment_url']) && !empty($_POST['attachment_url'])){
-                            if(strstr(basename($_POST['attachment_url']),"local_file_")){
-                                $file_path =Wp_Migration_Duplicator::$backup_dir.'/'.basename($_POST['attachment_url']);
+                        if(isset($_POST['attachment_url']) && !empty($_POST['attachment_url'])){ // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                            if(strstr(basename($_POST['attachment_url']),"local_file_")){ // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                                $file_path =Wp_Migration_Duplicator::$backup_dir.'/'.basename($_POST['attachment_url']); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                                 if(file_exists($file_path)){
-                                   unlink($file_path);
+                                   unlink($file_path); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_unlink
                                 }
                             }
                         }
@@ -416,7 +420,7 @@ class Wp_Migration_Duplicator_Import
             }
             $memory = @size_format(ini_get('memory_limit'));
             $wp_memory = @size_format(WP_MEMORY_LIMIT);                      
-            Webtoffe_logger::write_log( 'Import','---[ New import started at '.date('Y-m-d H:i:s').' ] PHP Memory: ' . $memory . ', WP Memory: ' . $wp_memory );
+            Webtoffe_logger::write_log( 'Import','---[ New import started at '.date('Y-m-d H:i:s').' ] PHP Memory: ' . $memory . ', WP Memory: ' . $wp_memory ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
   
 		$options = Wp_Migration_Duplicator::get_webtoffee_migrator_option();
 		$error_message = __('The specified file could not be found on your server ','wp-migration-duplicator');
@@ -425,8 +429,8 @@ class Wp_Migration_Duplicator_Import
 			'file' => '',
 			'message' => $error_message
 		);
-		$import_method = Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['import_method']);
-		$attachment_url = Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['attachment_url']);
+		$import_method = isset($_POST['import_method']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['import_method']) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$attachment_url = isset($_POST['attachment_url']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['attachment_url']) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		if( $attachment_url ) {
 			$import_result['status'] = true;
 			$import_result['file'] = $attachment_url;
@@ -488,9 +492,9 @@ class Wp_Migration_Duplicator_Import
                     $di = new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS);
                     $ri = new RecursiveIteratorIterator($di, RecursiveIteratorIterator::CHILD_FIRST);
                     foreach ( $ri as $file ) {
-                            $file->isDir() ?  rmdir($file) : unlink($file);
+                            $file->isDir() ?  rmdir($file) : unlink($file); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_unlink, WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
                     }
-                    rmdir($dir);
+                    rmdir($dir); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
                     Webtoffe_logger::write_log( 'Import','Old database backup directory removed.' );
                 }
 
@@ -552,7 +556,9 @@ class Wp_Migration_Duplicator_Import
 	public function out_settings_form($arr)
 	{
             if(Wp_Migration_Duplicator_Security_Helper::wt_mgdp_is_screen_allowed()){
+                // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
 		wp_enqueue_script($this->module_id, plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION);
+                // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
                 wp_enqueue_script($this->module_id.'-dropzone', plugin_dir_url(__FILE__) . 'assets/js/dropzone.min.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION);
                 wp_enqueue_style('select2css', WT_MGDP_PLUGIN_URL. 'admin/css/select2.css', array(), WP_MIGRATION_DUPLICATOR_VERSION, 'all' );
                 wp_enqueue_script('select2', WT_MGDP_PLUGIN_URL.'admin/js/select2.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION, false );
@@ -564,7 +570,8 @@ class Wp_Migration_Duplicator_Import
 			),
 			'ajax_url' => admin_url('admin-ajax.php'),
 			'labels' => array(
-				'error' => sprintf(__('An unknown error has occurred! Refer to our %stroubleshooting guide%s for assistance.'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
+				// translators: 1: troubleshooting guide link, 2: closing anchor tag
+				'error' => sprintf(__('An unknown error has occurred! Refer to our %1$s troubleshooting guide %2$s for assistance.', 'wp-migration-duplicator'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
 				'success' => __('Success', 'wp-migration-duplicator'),
 				'finished' => __('Finished', 'wp-migration-duplicator'),
 				'sure' => __("You can't undo this action. Are you sure?", 'wp-migration-duplicator'),
@@ -577,29 +584,31 @@ class Wp_Migration_Duplicator_Import
 				'nofilename' => __("Please specify the file name.", 'wp-migration-duplicator'),
 				'zip_disable' => __("Before import Please enable ZipArchive extension in server", 'wp-migration-duplicator'),
                                 'sure'=>__("You can't undo this action. Are you sure?",'wp-migration-duplicator'),
-                            'choosed_template'=>__('Choosed template: '),
-				'choose_import_method'=>__('Please select an import method.'),
-				'choose_template'=>__('Please select an import template.'),
-				'step'=>__('Step'),
-				'choose_ftp_profile'=>__('Please select an FTP profile.'),
-				'choose_import_from'=>__('Please choose import from.'),
-				'choose_a_file'=>__('Please choose an import file.'),
-				'select_an_import_template'=>__('Please select an import template.'),
-				'validating_file'=>__('Creating temp file and validating.'),
-				'processing_file'=>__('Processing input file...'), 
-				'column_not_in_the_list'=>__('This column is not present in the import list. Please tick the checkbox to include.'),
-				'uploading'=>__('The file upload is in progress. Please wait until it is completed.'),
-				'outdated'=>__('You are using an outdated browser. Please upgarde your browser.'),
-				'server_error'=>__('An error occured.'),
+                            'choosed_template'=>__('Choosed template: ', 'wp-migration-duplicator'),
+				'choose_import_method'=>__('Please select an import method.', 'wp-migration-duplicator'),
+				'choose_template'=>__('Please select an import template.', 'wp-migration-duplicator'),
+				'step'=>__('Step', 'wp-migration-duplicator'),
+				'choose_ftp_profile'=>__('Please select an FTP profile.', 'wp-migration-duplicator'),
+				'choose_import_from'=>__('Please choose import from.', 'wp-migration-duplicator'),
+				'choose_a_file'=>__('Please choose an import file.', 'wp-migration-duplicator'),
+				'select_an_import_template'=>__('Please select an import template.', 'wp-migration-duplicator'),
+				'validating_file'=>__('Creating temp file and validating.', 'wp-migration-duplicator'),
+				'processing_file'=>__('Processing input file...', 'wp-migration-duplicator'), 
+				'column_not_in_the_list'=>__('This column is not present in the import list. Please tick the checkbox to include.', 'wp-migration-duplicator'),
+				'uploading'=>__('The file upload is in progress. Please wait until it is completed.', 'wp-migration-duplicator'),
+				'outdated'=>__('You are using an outdated browser. Please upgarde your browser.', 'wp-migration-duplicator'),
+				'server_error'=>__('An error occured.', 'wp-migration-duplicator'),
 				//'invalid_file'=>sprintf(__('Invalid file type. Only %s are allowed'), implode(", ", array_values($this->allowed_import_file_type))),
-				'drop_upload'=>__('Drop files here or click to upload'),
-				'upload_done'=>sprintf(__('%s Upload Completed.'), '<span class="dashicons dashicons-yes-alt" style="color:#3fa847;"></span>'),
-                                'upload_done_msg'=>sprintf(__('Please click on the %s Import %s button to proceed.'), '<b>','</b>'),
-				'remove'=>__('Remove'),
+				'drop_upload'=>__('Drop files here or click to upload', 'wp-migration-duplicator'),
+				// translators: 1: dashicons icon
+                'upload_done'=>sprintf(__('%s Upload Completed.', 'wp-migration-duplicator'), '<span class="dashicons dashicons-yes-alt" style="color:#3fa847;"></span>'),
+                // translators: 1: opening bold tag, 2: closing bold tag    
+                'upload_done_msg'=>sprintf(__('Please click on the %1$s Import %2$s button to proceed.', 'wp-migration-duplicator'), '<b>','</b>'),
+				'remove'=>__('Remove', 'wp-migration-duplicator'),
 			)
 		);
 		wp_localize_script($this->module_id, $this->module_id, $params);
-                $offset=(isset($_GET['offset']) ? intval($_GET['offset']) : 0);
+                $offset=(isset($_GET['offset']) ? intval($_GET['offset']) : 0); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$limit=20;
                 $backup_list=Wp_Migration_Duplicator::get_logs($offset,$limit);
 		$total_list=Wp_Migration_Duplicator::get_log_total();
@@ -634,11 +643,11 @@ class Wp_Migration_Duplicator_Import
         if( file_exists(Wp_Migration_Duplicator::$backup_dir . '/import_db_path_details.json')){
             @unlink(Wp_Migration_Duplicator::$backup_dir . '/import_db_path_details.json');
         }
-        $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/import_db_path_details.json', "w");
+        $ffp = fopen(Wp_Migration_Duplicator::$backup_dir . '/import_db_path_details.json', "w");// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
         if (is_resource($ffp)) {
-            fwrite($ffp, json_encode($dir_arrr));
+            fwrite($ffp, json_encode($dir_arrr)); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
         }
-        fclose($ffp);
+        fclose($ffp); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
         $out['step_finished'] = 1;
         $out['status'] = true;
         Webtoffe_logger::write_log('Import', 'Db file initialized successfull');
@@ -720,15 +729,15 @@ class Wp_Migration_Duplicator_Import
 	public function finalize_migration($out) {
             global $wpdb;
             $old_version_flag = TRUE;
-            $connection = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-            @mysqli_query($connection, "SET FOREIGN_KEY_CHECKS = 0;");
-            @mysqli_query($connection, "SET SESSION sql_mode = ''");
-            @mysqli_query($connection, "set session wait_timeout=40000");
+            $connection = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_connect
+            @mysqli_query($connection, "SET FOREIGN_KEY_CHECKS = 0;"); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
+            @mysqli_query($connection, "SET SESSION sql_mode = ''"); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
+            @mysqli_query($connection, "set session wait_timeout=40000"); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
     //      @mysqli_query($this->dbh, "SET wait_timeout = ".mysqli_real_escape_string($this->dbh, $GLOBALS['DB_MAX_TIME']));
     //      @mysqli_query($this->dbh, "SET max_allowed_packet = ".mysqli_real_escape_string($this->dbh, $GLOBALS['DB_MAX_PACKETS']));
 
-            $mysql_version = substr(mysqli_get_server_info($connection), 0, 3); // Get Mysql Version
-            if (mysqli_connect_errno()) {
+            $mysql_version = substr(mysqli_get_server_info($connection), 0, 3); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_get_server_info
+            if (mysqli_connect_errno()) { // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_connect_errno
                 Webtoffe_logger::write_log('Import', 'Unable to connect to database.');
                 $out['msg'] = __('Unable to connect to database.', 'wp-migration-duplicator');
                 $out['sub_label'] = '<br /><span style="color:red;">' . $out['msg'] . '</span>';
@@ -756,14 +765,14 @@ class Wp_Migration_Duplicator_Import
 				Webtoffe_logger::write_log('Import', 'Table renaming started.');
                 foreach ($tbl_Array as $table) {
                         $new_table = str_replace('webtoffee_', $wpdb->prefix, $table);
-						if (mysqli_num_rows(mysqli_query($connection, "SHOW TABLES LIKE '$table'"))) {
+						if (mysqli_num_rows(mysqli_query($connection, "SHOW TABLES LIKE '$table'"))) { // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query,WordPress.DB.RestrictedFunctions.mysql_mysqli_num_rows
 							$drop_sql = 'DROP TABLE IF EXISTS ' . $new_table . ';';
-							if (!mysqli_query($connection, $drop_sql)) {
+							if (!mysqli_query($connection, $drop_sql)) { // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
 								Webtoffe_logger::write_log('Import', 'DB rename faild.connection errer---' . serialize($connection->error) . '---');
 							}
 							unset($drop_sql);
 							$sql_rename = 'RENAME TABLE ' . $table . ' TO ' . $new_table . ';';
-							if (!mysqli_query($connection, $sql_rename)) {
+							if (!mysqli_query($connection, $sql_rename)) { // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
 								Webtoffe_logger::write_log('Import', 'DB rename faild.connection errer---' . serialize($connection->error) . '---');
 							}
 							unset($sql_rename);
@@ -778,7 +787,7 @@ class Wp_Migration_Duplicator_Import
             if (file_exists($database_directory)) {
                 Wp_Migration_Duplicator::wt_mgt_delete_files($database_directory);
             }
-            Webtoffe_logger::write_log('Import', '---[ Import Ended at ' . date('Y-m-d H:i:s') . ' ] --- ');
+            Webtoffe_logger::write_log('Import', '---[ Import Ended at ' . date('Y-m-d H:i:s') . ' ] --- '); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
             delete_option('wp_mgdp_log_id');
             $out['msg'] = "Sucess";
             $out['status'] = true;
@@ -864,16 +873,16 @@ class Wp_Migration_Duplicator_Import
 	*/
 	public function upload_import_file($out)
 	{
-		if(isset($_FILES['wt_mgdp_import_file']))
+		if(isset($_FILES['wt_mgdp_import_file'])) // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		{
 
 			$allowed_import_file_type_mime=array(
                             'zip'=>'zip',
                          );	
                          $is_file_type_allowed=false;
-			if(!in_array($_FILES['wt_mgdp_import_file']['type'], $allowed_import_file_type_mime)) /* Not allowed file type. [Bug fix for Windows OS]Then verify it again with file extension */
-			{
-				$ext=pathinfo($_FILES['wt_mgdp_import_file']['name'], PATHINFO_EXTENSION);
+			if(!in_array($_FILES['wt_mgdp_import_file']['type'], $allowed_import_file_type_mime)){ // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+            /* Not allowed file type. [Bug fix for Windows OS]Then verify it again with file extension */			
+				$ext= isset($_FILES['wt_mgdp_import_file']['name']) ? pathinfo($_FILES['wt_mgdp_import_file']['name'], PATHINFO_EXTENSION) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotValidated, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if(isset($allowed_import_file_type_mime[$ext])) /* extension exists. */
 				{
 					$is_file_type_allowed=true;
@@ -886,10 +895,12 @@ class Wp_Migration_Duplicator_Import
 			if($is_file_type_allowed) /* Allowed file type */
 			{
 
-				@set_time_limit(360000); // 1 hour 
+                // 1 hour 
+				@set_time_limit(360000); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
 
 				$max_bytes=wp_max_upload_size(); //convert to bytes
-				if($max_bytes>=$_FILES['wt_mgdp_import_file']['size'])
+                $current_file_size = isset($_FILES['wt_mgdp_import_file']['size']) ? $_FILES['wt_mgdp_import_file']['size'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+				if($max_bytes>=$current_file_size)
 				{
 					/*$file_name='local_file_'.time().'_'.sanitize_file_name($_FILES['wt_mgdp_import_file']['name']); //sanitize the file name, add a timestamp prefix to avoid conflict
 					$file_path=self::get_file_path($file_name);
@@ -910,14 +921,14 @@ class Wp_Migration_Duplicator_Import
 							$this->delete_import_file($file_url);
 						}*/
                                     
-                                            if ( ! is_writable(Wp_Migration_Duplicator::$backup_dir)) {
+                                            if ( ! is_writable(Wp_Migration_Duplicator::$backup_dir)) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
 
-                                                 $out['msg']=__('Unable to upload file. Please check write permission of your `wp-content` folder.');
+                                                 $out['msg']=__('Unable to upload file. Please check write permission of your `wp-content` folder.', 'wp-migration-duplicator');
                                                  
                                              } else {
                                     
-                                                if (!empty($_FILES)) {
-                                                    foreach ($_FILES as $file) {
+                                                if (!empty($_FILES)) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                                                    foreach ($_FILES as $file) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
                                                         if ($file['error'] != 0) {
                                                             $errors[] = array('text' => 'File error', 'error' => $file['error'], 'name' => $file['name']);
                                                             continue;
@@ -929,8 +940,8 @@ class Wp_Migration_Duplicator_Import
 
                                                         $tmp_file_path = $file['tmp_name'];
                                                         $filename = (isset($file['filename']) ) ? $file['filename'] : $file['name'];
-                                                        $post_data = $_POST;
-                                                        if (isset($_POST['dzUuid'])) {
+                                                        $post_data = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                                                        if (isset($_POST['dzUuid'])) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
                                                             $chunks_res = $this->resumableUpload($tmp_file_path, $filename, $post_data);
                                                             if (!$chunks_res['final']) {
                                                                 header('Content-type: application/json');
@@ -950,11 +961,11 @@ class Wp_Migration_Duplicator_Import
 
                                         }else
                                         {
-                                                $out['msg']=__('File size exceeds the limit.');
+                                                $out['msg']=__('File size exceeds the limit.', 'wp-migration-duplicator');
                                         }
 			}else
 			{
-				$out['msg']=__('Invalid file type. Only ZIP files are allowed.');
+				$out['msg']=__('Invalid file type. Only ZIP files are allowed.', 'wp-migration-duplicator');
 			}
 		
                 }
@@ -984,7 +995,7 @@ class Wp_Migration_Duplicator_Import
                     }
                 }
                 reset($objects);
-                rmdir($dir);
+                rmdir($dir); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
             }
         }
         function returnJson($arr){
@@ -995,12 +1006,12 @@ class Wp_Migration_Duplicator_Import
 
           function cleanUp($file_chunks_folder){
               // rename the temporary directory (to avoid access from other concurrent chunks uploads) and than delete it
-              if (rename($file_chunks_folder, $file_chunks_folder.'_UNUSED')) {
+              if (rename($file_chunks_folder, $file_chunks_folder.'_UNUSED')) { // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
                   $this->rrmdir($file_chunks_folder.'_UNUSED');
               } else {
                   $this->rrmdir($file_chunks_folder);
               }
-              @rmdir(Wp_Migration_Duplicator::$backup_dir."/tmp/");
+              @rmdir(Wp_Migration_Duplicator::$backup_dir."/tmp/"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
           }
 
           function resumableUpload($tmp_file_path, $filename,$post_data){
@@ -1013,7 +1024,7 @@ class Wp_Migration_Duplicator_Import
 
                   $file_chunks_folder = "$dir$identifier";
                   if (!is_dir($file_chunks_folder)) {
-                      mkdir($file_chunks_folder, 0777, true);
+                      mkdir($file_chunks_folder, 0777, true); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
                   }
 
                   $filename = str_replace( array(' ','(', ')' ), '_', $filename ); # remove problematic symbols
@@ -1029,7 +1040,7 @@ class Wp_Migration_Duplicator_Import
 
                   $chunk_file = "$file_chunks_folder/{$filename}.part{$chunkInd}";
 
-                  if (!move_uploaded_file($tmp_file_path, $chunk_file)) {
+                  if (!move_uploaded_file($tmp_file_path, $chunk_file)) { // phpcs:ignore Generic.PHP.ForbiddenFunctions.Found
                       $errors[] = array( 'text'=>'Move error', 'name'=>$filename, 'index'=>$chunkInd );
                   }
 
@@ -1094,15 +1105,15 @@ class Wp_Migration_Duplicator_Import
                   return false;
               }
 
-              $fp = fopen("$rel_path$saveName$extension", 'w');
+              $fp = fopen("$rel_path$saveName$extension", 'w'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
               if ($fp === false) {
                   $errors[] = 'cannot create the destination file';
                   return false;
               }
               for ($i=0; $i<$total_chunks; $i++) {
-                  fwrite($fp, file_get_contents($file_chunks_folder.'/'.$fileName.'.part'.$i));
+                  fwrite($fp, file_get_contents($file_chunks_folder.'/'.$fileName.'.part'.$i)); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
               }
-              fclose($fp);
+              fclose($fp); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 
               return "$rel_path$saveName$extension";
           }
@@ -1128,7 +1139,7 @@ class Wp_Migration_Duplicator_Import
 	{
 		if(!is_dir(Wp_Migration_Duplicator::$backup_dir))
         {
-            if(!mkdir(Wp_Migration_Duplicator::$backup_dir, 0700))
+            if(!mkdir(Wp_Migration_Duplicator::$backup_dir, 0700)) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
             {
             	return false;
             }else
@@ -1138,11 +1149,11 @@ class Wp_Migration_Duplicator_Import
 		        {
 		        	if(!file_exists(Wp_Migration_Duplicator::$backup_dir.'/'.$file))
 			        {
-			            $fh=@fopen(Wp_Migration_Duplicator::$backup_dir.'/'.$file, "w");
+			            $fh=@fopen(Wp_Migration_Duplicator::$backup_dir.'/'.$file, "w"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 			            if(is_resource($fh))
 			            {
-			                fwrite($fh, $file_content);
-			                fclose($fh);
+			                fwrite($fh, $file_content); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+			                fclose($fh); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 			            }
 			        }
 		        } 
@@ -1167,7 +1178,7 @@ class Wp_Migration_Duplicator_Import
 	*/
 	public function delete_import_file($file_url)
 	{
-                $file_url = is_array($file_url)&& isset($_POST['file_url'])&&!empty(isset($_POST['file_url']))?$_POST['file_url']:$file_url;
+                $file_url = is_array($file_url)&& isset($_POST['file_url'])&&!empty(isset($_POST['file_url']))?$_POST['file_url']:$file_url; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		$file_path_arr=explode("/", $file_url);
 		$file_name=end($file_path_arr);
 		$file_path=$this->get_file_path($file_name);
@@ -1175,7 +1186,7 @@ class Wp_Migration_Duplicator_Import
 		{	
 //			if($this->is_extension_allowed($file_url))/* file type is in allowed list */ 
 //			{
-				@unlink($file_path);
+				@unlink($file_path); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_unlink
 				return true;
 //			}
 		}

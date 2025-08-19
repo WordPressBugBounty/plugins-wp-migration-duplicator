@@ -57,21 +57,21 @@ class Webtoffe_logger
      */
     public static function createLogFile()
     {
-        $time = date(static::$options['dateFormat']);
+        $time = date(static::$options['dateFormat']); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
         static::$log_file =  Wp_Migration_Duplicator::$backup_dir . "/logs/log.log";
       
         //Check if directory /logs exists
         if (!file_exists(Wp_Migration_Duplicator::$backup_dir . '/logs')) {
-            mkdir(Wp_Migration_Duplicator::$backup_dir . '/logs', 0777, true);
+            mkdir(Wp_Migration_Duplicator::$backup_dir . '/logs', 0777, true); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
         }
 
         //Create log file if it doesn't exist.
         if (!file_exists(static::$log_file)) {
-            fopen(static::$log_file, 'w') or exit("Can't create {static::log_file}!");
+            fopen(static::$log_file, 'w') or exit("Can't create {static::log_file}!"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
         }
 
         //Check permissions of file.
-        if (!is_writable(static::$log_file)) {
+        if (!is_writable(static::$log_file)) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
             //throw exception if not writable
             throw new Exception("ERROR: Unable to write to file!", 1);
         }
@@ -104,7 +104,7 @@ class Webtoffe_logger
     public static function info($message, array $context = [])
     {
         // grab the line and file path where the log method has been executed ( for troubleshooting )
-        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
+        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
 
         //execute the writeLog method with passing the arguments
         static::writeLog([
@@ -127,7 +127,7 @@ class Webtoffe_logger
     public static function notice($message, array $context = [])
     {
         // grab the line and file path where the log method has been executed ( for troubleshooting )
-        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
+        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
 
         //execute the writeLog method with passing the arguments
         static::writeLog([
@@ -151,7 +151,7 @@ class Webtoffe_logger
     {
 
         // grab the line and file path where the log method has been executed ( for troubleshooting )
-        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
+        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
 
         //execute the writeLog method with passing the arguments
         static::writeLog([
@@ -174,7 +174,7 @@ class Webtoffe_logger
     public static function warning($message, array $context = [])
     {
         // grab the line and file path where the log method has been executed ( for troubleshooting )
-        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
+        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
 
         //execute the writeLog method with passing the arguments
         static::writeLog([
@@ -197,7 +197,7 @@ class Webtoffe_logger
     public static function error($message, array $context = [])
     {
         // grab the line and file path where the log method has been executed ( for troubleshooting )
-        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
+        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
 
         //execute the writeLog method with passing the arguments
         static::writeLog([
@@ -228,7 +228,7 @@ class Webtoffe_logger
 		$insert_data_type=array(
 			'%s','%s','%d'
 		);
-		
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$insert_response=$wpdb->insert($tb, $insert_data, $insert_data_type);
 		
 		/* check for auto delete */
@@ -252,6 +252,7 @@ class Webtoffe_logger
 		$update_where_type=array(
 			'%d'
 		);
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		if($wpdb->update($tb, $update_data, $update_where, $update_data_type, $update_where_type)!==false)
 		{
 			return true;
@@ -270,8 +271,9 @@ class Webtoffe_logger
 			$where="=%d";
 			$where_data=array($id);
 		}
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 		$qry=$wpdb->prepare("SELECT file_name FROM $tb WHERE id".$where, $where_data);
-
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->get_var($qry); 
 	}
 
@@ -287,7 +289,7 @@ class Webtoffe_logger
     public static function fatal($message, array $context = [])
     {
         // grab the line and file path where the log method has been executed ( for troubleshooting )
-        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1);
+        $bt = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
 
         //execute the writeLog method with passing the arguments
         static::writeLog([
@@ -318,7 +320,7 @@ class Webtoffe_logger
         // $path = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
 
         //Grab time - based on the time format
-        $time = date(static::$options['logFormat']);
+        $time = date(static::$options['logFormat']); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 
         // Convert context to json
         $context = json_encode($args['context']);
@@ -339,7 +341,7 @@ class Webtoffe_logger
         $contextLog = empty($args['context']) ? "" : "{$context}";
 
         // Write time, url, & message to end of file
-        fwrite(static::$file, "{$timeLog}{$pathLog}{$lineLog}: {$severityLog} - {$messageLog} {$contextLog}" . PHP_EOL);
+        fwrite(static::$file, "{$timeLog}{$pathLog}{$lineLog}: {$severityLog} - {$messageLog} {$contextLog}" . PHP_EOL); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 
         // Close file stream
         static::closeFile();
@@ -353,7 +355,7 @@ class Webtoffe_logger
     {
         $openFile = static::$log_file;
         // 'a' option = place pointer at end of file
-        static::$file = fopen($openFile, 'a') or exit("Can't open $openFile!");
+        static::$file = fopen($openFile, 'a') or exit(esc_html__("Can't open $openFile!", 'wp-migration-duplicator')); // phpcs:ignore WordPress.WP.I18n.InterpolatedVariableText, WordPress.WP.AlternativeFunctions.file_system_operations_fopen
     }
 
     /**
@@ -362,7 +364,7 @@ class Webtoffe_logger
     public static function closeFile()
     {
         if (static::$file) {
-            fclose(static::$file);
+            fclose(static::$file); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
         }
     }
 
@@ -379,8 +381,8 @@ class Webtoffe_logger
     public static function absToRelPath($pathToConvert)
     {
         $pathAbs = str_replace(['/', '\\'], '/', $pathToConvert);
-        $documentRoot = str_replace(['/', '\\'], '/', $_SERVER['DOCUMENT_ROOT']);
-        return $_SERVER['SERVER_NAME'] . str_replace($documentRoot, '', $pathAbs);
+        $documentRoot = str_replace(['/', '\\'], '/', $_SERVER['DOCUMENT_ROOT']); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized	
+        return $_SERVER['SERVER_NAME'] . str_replace($documentRoot, '', $pathAbs); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
     }
 
     /**
@@ -424,7 +426,7 @@ class Webtoffe_logger
 	{
 		self::$file_path=$file_path;
 		self::$mode=$mode;
-		self::$file_pointer=@fopen($file_path, $mode);
+		self::$file_pointer=@fopen($file_path, $mode); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 	}
 	public static function write_row($text, $is_writing_finished=false)
 	{
@@ -432,7 +434,7 @@ class Webtoffe_logger
 		{
 			return;
 		}
-		@fwrite(self::$file_pointer, $text.PHP_EOL);
+		@fwrite(self::$file_pointer, $text.PHP_EOL); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 		if($is_writing_finished)
 		{
 			self::close_file_pointer();
@@ -442,7 +444,7 @@ class Webtoffe_logger
 	{
 		if(self::$file_pointer!=null)
 		{
-			fclose(self::$file_pointer);
+			fclose(self::$file_pointer); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 		}
 	}
 	
@@ -461,15 +463,15 @@ class Webtoffe_logger
             if($action_type == 'Fatal'){
             $randomstring = Wp_Migration_Duplicator_Security_Helper::generateRandomString();
 
-            $fatal_error_log_file =  Wp_Migration_Duplicator::$backup_dir . "/logs/" . $randomstring . "FATAL_ERROR_LOG_" . date("d_M_Y") . ".log";
+            $fatal_error_log_file =  Wp_Migration_Duplicator::$backup_dir . "/logs/" . $randomstring . "FATAL_ERROR_LOG_" . date("d_M_Y") . ".log"; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
             //Check if directory /logs exists
             if (!file_exists(Wp_Migration_Duplicator::$backup_dir . '/logs')) {
-                mkdir(Wp_Migration_Duplicator::$backup_dir . '/logs', 0777, true);
+                mkdir(Wp_Migration_Duplicator::$backup_dir . '/logs', 0777, true); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
             }
             if (!file_exists($fatal_error_log_file)) {
-                touch($fatal_error_log_file);
+                touch($fatal_error_log_file); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_touch
             }
-            $file_name = $randomstring . "FATAL_ERROR_LOG_" . date("d_M_Y") . ".log";
+            $file_name = $randomstring . "FATAL_ERROR_LOG_" . date("d_M_Y") . ".log"; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
             }else{
                 $historyid = self::$history_id ? self::$history_id : get_option('wp_mgdp_log_id',true);
 		$old_file_name=self::get_logname_entry_by_history_id($historyid);
@@ -529,7 +531,7 @@ class Webtoffe_logger
 	{
 		if(!is_dir(self::$log_dir))
         {
-            if(!mkdir(self::$log_dir, 0700))
+            if(!mkdir(self::$log_dir, 0700)) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
             {
             	return false;
             }else
@@ -539,11 +541,11 @@ class Webtoffe_logger
 		        {
 		        	if(!file_exists(self::$log_dir.'/'.$file))
 			        {
-			            $fh=@fopen(self::$log_dir.'/'.$file, "w");
+			            $fh=@fopen(self::$log_dir.'/'.$file, "w"); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 			            if(is_resource($fh))
 			            {
-			                fwrite($fh, $file_content);
-			                fclose($fh);
+			                fwrite($fh, $file_content); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+			                fclose($fh); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 			            }
 			        }
 		        } 
@@ -564,7 +566,8 @@ class Webtoffe_logger
 		$arr=array($history_id);
         $arr[]=$randomstring;
 		$arr[]=$action_type;
-		$arr[]=date('Y-m-d_h_i_s_A'); /* if changing this format please consider `check_log_exists_for_entry` method */
+        /* if changing this format please consider `check_log_exists_for_entry` method */
+		$arr[]=date('Y-m-d_h_i_s_A'); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date 
 
 		$arr=array_filter($arr);
 		return implode("_", $arr).'.log';

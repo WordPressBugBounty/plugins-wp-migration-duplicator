@@ -35,6 +35,7 @@ class Wp_Migration_Duplicator_Activator {
         if(is_multisite()) 
         {
             // Get all blogs in the network and activate plugin on each one
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
             $blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
             foreach($blog_ids as $blog_id ) 
             {
@@ -59,6 +60,7 @@ class Wp_Migration_Duplicator_Activator {
         $upload_dir=Wp_Migration_Duplicator::$backup_dir;
         if(!is_dir($upload_dir))
         {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
             @mkdir($upload_dir, 0700);
         }
 
@@ -67,10 +69,13 @@ class Wp_Migration_Duplicator_Activator {
         {
             if(!file_exists($upload_dir.'/'.$file))
             {
+                // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                 $fh=@fopen($upload_dir.'/'.$file, "w");
                 if(is_resource($fh))
                 {
+                    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                     fwrite($fh,$file_content);
+                    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
                     fclose($fh);
                 }
             }
@@ -87,12 +92,15 @@ class Wp_Migration_Duplicator_Activator {
 		//install necessary tables
 		//creating table for saving log data================
         $search_query = "SHOW TABLES LIKE %s";
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
         $charset_collate = $wpdb->get_charset_collate();
         $tb='wtmgdp_log';
         $like = '%' . $wpdb->prefix.$tb.'%';
         $table_name = $wpdb->prefix.$tb;
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         if(!$wpdb->get_results($wpdb->prepare($search_query, $like), ARRAY_N)) 
         {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
             $sql_settings = "CREATE TABLE IF NOT EXISTS `$table_name` (
 			  `id_wtmgdp_log` int(11) NOT NULL AUTO_INCREMENT,
 			  `log_name` varchar(200) NOT NULL,
@@ -111,7 +119,9 @@ class Wp_Migration_Duplicator_Activator {
         $tb='wt_mgdp_ftp';
         $like = '%'.$wpdb->prefix.$tb.'%';
         $table_name = $wpdb->prefix.$tb;
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching    
         if(!$wpdb->get_results($wpdb->prepare($search_query, $like), ARRAY_N)) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
                   $sql_settings = "CREATE TABLE IF NOT EXISTS `$table_name` (
                                       `id` INT NOT NULL AUTO_INCREMENT, 
                                       `name` VARCHAR(255) NOT NULL, 
@@ -136,8 +146,10 @@ class Wp_Migration_Duplicator_Activator {
         $tb='wt_mgdp_action_history';
         $like = '%'.$wpdb->prefix.$tb.'%';
         $table_name = $wpdb->prefix.$tb;
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         if(!$wpdb->get_results($wpdb->prepare($search_query, $like), ARRAY_N)) 
         {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
             $sql_settings = "CREATE TABLE IF NOT EXISTS `$table_name` (
 				`id` INT NOT NULL AUTO_INCREMENT, 
 				`item_type` VARCHAR(255) NOT NULL, 

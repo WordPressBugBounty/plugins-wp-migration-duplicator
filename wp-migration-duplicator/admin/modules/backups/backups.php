@@ -38,7 +38,7 @@ class Wp_Migration_Duplicator_Backups
 	*/
 	public function ajax_main()
 	{
-		$action=Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['sub_action']);
+		$action= isset($_POST['sub_action']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['sub_action']) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$out=array(
 			'status'=>false,
 			'msg'=>__('Error','wp-migration-duplicator'),
@@ -57,7 +57,7 @@ class Wp_Migration_Duplicator_Backups
 
 		if(in_array($action,$this->ajax_action_list) && method_exists($this,$action))
 		{
-			$this->export_id=(isset($_POST['export_id']) ? intval($_POST['export_id']) : 0);
+			$this->export_id=(isset($_POST['export_id']) ? intval($_POST['export_id']) : 0); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$out=$this->{$action}($out);
 		}else
 		{
@@ -126,6 +126,7 @@ class Wp_Migration_Duplicator_Backups
 	**/
 	public function out_settings_form($arr)
 	{
+		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
 		wp_enqueue_script($this->module_id,plugin_dir_url( __FILE__ ).'assets/js/main.js',array('jquery'),WP_MIGRATION_DUPLICATOR_VERSION);
 		$params=array(
 			'nonces' => array(
@@ -133,7 +134,8 @@ class Wp_Migration_Duplicator_Backups
 	        ),
 	        'ajax_url' => admin_url('admin-ajax.php'),
 	        'labels'=>array(
-	        	'error'=>sprintf(__('An unknown error has occurred! Refer to our %stroubleshooting guide%s for assistance.'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
+	        	// translators: 1: troubleshooting guide link, 2: closing anchor tag
+	        	'error'=>sprintf(__('An unknown error has occurred! Refer to our %1$s troubleshooting guide %2$s for assistance.', 'wp-migration-duplicator'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
 	        	'success'=>__('Success','wp-migration-duplicator'),
 	        	'sure'=>__("You can't undo this action. Are you sure?",'wp-migration-duplicator'),
 	        	'saving'=>__("Saving",'wp-migration-duplicator'),
@@ -142,7 +144,7 @@ class Wp_Migration_Duplicator_Backups
 		);
 		wp_localize_script($this->module_id,$this->module_id,$params);
 		$view_file=plugin_dir_path( __FILE__ ).'views/backups.php';
-		$offset=(isset($_GET['offset']) ? intval($_GET['offset']) : 0);
+		$offset=(isset($_GET['offset']) ? intval($_GET['offset']) : 0); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$limit=20;
 		$backup_list=Wp_Migration_Duplicator::get_logs($offset,$limit);
 		$total_list=Wp_Migration_Duplicator::get_log_total();
@@ -160,20 +162,20 @@ class Wp_Migration_Duplicator_Backups
         {
             global $wpdb;
 
-            if(!isset($_POST['reason_id']))
+            if(!isset($_POST['reason_id'])) // phpcs:ignore WordPress.Security.NonceVerification.Missing
             {
                 wp_send_json_error();
             }
-
+			// Sending feature request data to webtoffe server.
             $data = array(
-                'reason_id' => sanitize_text_field($_POST['reason_id']),
+                'reason_id' => isset($_POST['reason_id']) ? sanitize_text_field(wp_unslash($_POST['reason_id'])) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
                 'plugin' =>$this->plugin_id,
                 'auth' =>$this->auth_key,
                 'date' => gmdate("M d, Y h:i:s A"),
                 'url' => '',
                 'user_email' => '',
-                'reason_info' => isset($_REQUEST['reason_info']) ? trim(stripslashes(sanitize_text_field($_REQUEST['reason_info']))) : '',
-                'software' => $_SERVER['SERVER_SOFTWARE'],
+                'reason_info' => isset($_REQUEST['reason_info']) ? trim(stripslashes(sanitize_text_field(wp_unslash($_REQUEST['reason_info'])))) : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                'software' => isset($_SERVER['SERVER_SOFTWARE']) ? sanitize_text_field( wp_unslash($_SERVER['SERVER_SOFTWARE'])) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
                 'php_version' => phpversion(),
                 'mysql_version' => $wpdb->db_version(),
                 'wp_version' => get_bloginfo('version'),

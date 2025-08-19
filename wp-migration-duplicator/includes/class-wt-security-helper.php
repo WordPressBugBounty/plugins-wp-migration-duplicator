@@ -145,7 +145,7 @@ if (!class_exists('Wp_Migration_Duplicator_Security_Helper')) {
 		 */
 		public static function verify_nonce($plugin_id, $nonce_id = '')
 		{
-			$nonce = (isset($_REQUEST['_wpnonce']) ? sanitize_text_field($_REQUEST['_wpnonce']) : '');
+			$nonce = (isset($_REQUEST['_wpnonce']) ? sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$nonce = (is_array($nonce) ? $nonce[0] : $nonce); //in some cases multiple nonces are declared
 			$nonce_id = ($nonce_id == "" ? $plugin_id : $nonce_id); //if nonce id not provided then uses plugin id as nonce id
 
@@ -197,8 +197,8 @@ if (!class_exists('Wp_Migration_Duplicator_Security_Helper')) {
 		}
 		public static function wt_mgdp_get_current_page()
 		{
-			if (isset($_GET['page'])) {
-				return $_GET['page'];
+			if (isset($_GET['page'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				return $_GET['page']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			}
 			return '';
 		}
@@ -206,13 +206,13 @@ if (!class_exists('Wp_Migration_Duplicator_Security_Helper')) {
 		public static function generateRandomString()
 		{
 			// Generate a 6-digit prefix
-			$prefix = strval(mt_rand(100000, 999999));
+			$prefix = strval(mt_rand(100000, 999999)); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 
 			// Generate a 2-digit random number
-			$digits = strval(mt_rand(0, 9)) . strval(mt_rand(0, 9));
+			$digits = strval(mt_rand(0, 9)) . strval(mt_rand(0, 9)); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 
 			// Generate a random lowercase character
-			$char = chr(mt_rand(97, 122));
+			$char = chr(mt_rand(97, 122)); // phpcs:ignore WordPress.WP.AlternativeFunctions.rand_mt_rand
 
 			// Concatenate the prefix, 2-digit number, and character
 			return $prefix . $digits . $char;

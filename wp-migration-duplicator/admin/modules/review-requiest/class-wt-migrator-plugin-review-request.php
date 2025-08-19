@@ -50,20 +50,21 @@ class Wp_Migration_Duplicator_Review_Request
         add_action($this->activation_hook, array($this, 'on_activate'));
         add_action($this->deactivation_hook, array($this, 'on_deactivate'));
 
-        if ($this->check_condition()) /* checks the banner is active now */ {
-            $this->banner_message = sprintf(__("Hey, we at %sWebToffee%s would like to thank you for using our plugin. We would really appreciate if you could take a moment to drop a quick review that will inspire us to keep going.", 'wp-migration-duplicator'), '<b>', '</b>');
-
-            /* button texts */
-            $this->later_btn_text   = __("Remind me later", 'wp-migration-duplicator');
-            $this->never_btn_text   = __("Not interested", 'wp-migration-duplicator');
-            $this->review_btn_text  = __("Review now", 'wp-migration-duplicator');
-
+        if ($this->check_condition()) /* checks the banner is active now */ {            
             add_action('admin_notices', array($this, 'show_banner')); /* show banner */
             add_action('admin_print_footer_scripts', array($this, 'add_banner_scripts')); /* add banner scripts */
             add_action('wp_ajax_' . $this->ajax_action_name, array($this, 'process_user_action')); /* process banner user action */
         }
+        add_action('init', array($this, 'load_messages'));
     }
 
+    public function load_messages(){
+        // translators: 1: WebToffee, 2: closing bold tag
+        $this->banner_message = sprintf(__('Hey, we at %1$s WebToffee %2$s would like to thank you for using our plugin. We would really appreciate if you could take a moment to drop a quick review that will inspire us to keep going.', 'wp-migration-duplicator'), '<b>', '</b>');
+        $this->later_btn_text   = __('Remind me later', 'wp-migration-duplicator');
+        $this->never_btn_text   = __('Not interested', 'wp-migration-duplicator');
+        $this->review_btn_text  = __('Review now', 'wp-migration-duplicator');
+    }
     /**
      *	Set config vars
      */
@@ -120,23 +121,23 @@ class Wp_Migration_Duplicator_Review_Request
     {
         $this->update_banner_state(1); /* update banner active state */
 ?>
-        <div class="<?php echo $this->banner_css_class; ?> notice-info notice is-dismissible">
+        <div class="<?php echo esc_attr($this->banner_css_class); ?> notice-info notice is-dismissible">
             <?php
             if ($this->webtoffee_logo_url != "") {
             ?>
-                <h3 style="margin: 10px 0;"><?php echo $this->plugin_title; ?></h3>
+                <h3 style="margin: 10px 0;"><?php echo esc_html($this->plugin_title); ?></h3>
             <?php
             }
             ?>
             <p>
-                <?php echo $this->banner_message; ?>
+                <?php echo wp_kses_post($this->banner_message); ?>
             </p>
             <p>
-                <a class="button button-secondary" style="color:#333; border-color:#ccc; background:#efefef;" data-type="later"><?php echo $this->later_btn_text; ?></a>
-                <a class="button button-primary" data-type="review"><?php echo $this->review_btn_text; ?></a>
+                <a class="button button-secondary" style="color:#333; border-color:#ccc; background:#efefef;" data-type="later"><?php echo esc_html($this->later_btn_text); ?></a>
+                <a class="button button-primary" data-type="review"><?php echo esc_html($this->review_btn_text); ?></a>
             </p>
             <div class="wt-cli-review-footer" style="position: relative;">
-                <span class="wt-cli-footer-icon" style="position: absolute;right: 0;bottom: 10px;"><img src="<?php echo plugins_url(basename(plugin_dir_path(WT_MGDP_PLUGIN_FILENAME))).$this->webtoffee_logo_url; ?>" style="max-width:100px;"></span>
+                <span class="wt-cli-footer-icon" style="position: absolute;right: 0;bottom: 10px;"><img src="<?php echo esc_url(plugins_url(basename(plugin_dir_path(WT_MGDP_PLUGIN_FILENAME))).$this->webtoffee_logo_url); ?>" style="max-width:100px;"></span>
             </div>
         </div>
     <?php
@@ -149,7 +150,7 @@ class Wp_Migration_Duplicator_Review_Request
     {
         check_ajax_referer($this->plugin_prefix);
         if (isset($_POST['wt_review_action_type'])) {
-            $action_type = sanitize_text_field($_POST['wt_review_action_type']);
+            $action_type = sanitize_text_field(wp_unslash($_POST['wt_review_action_type']));
 
             /* current action is in allowed action list */
             if (in_array($action_type, $this->allowed_action_type_arr)) {
@@ -182,32 +183,32 @@ class Wp_Migration_Duplicator_Review_Request
 
                 /* prepare data object */
                 var data_obj = {
-                    _wpnonce: '<?php echo $nonce; ?>',
-                    action: '<?php echo $this->ajax_action_name; ?>',
+                    _wpnonce: '<?php echo esc_attr($nonce); ?>',
+                    action: '<?php echo esc_attr($this->ajax_action_name); ?>',
                     wt_review_action_type: ''
                 };
 
-                $(document).on('click', '.<?php echo $this->banner_css_class; ?> a.button', function(e) {
+                $(document).on('click', '.<?php echo esc_attr($this->banner_css_class); ?> a.button', function(e) {
                     e.preventDefault();
                     var elm = $(this);
                     var btn_type = elm.attr('data-type');
                     if (btn_type == 'review') {
-                        window.open('<?php echo $this->review_url; ?>');
+                        window.open('<?php echo esc_url($this->review_url); ?>');
                     }
-                    elm.parents('.<?php echo $this->banner_css_class; ?>').hide();
+                    elm.parents('.<?php echo esc_attr($this->banner_css_class); ?>').hide();
 
                     data_obj['wt_review_action_type'] = btn_type;
                     $.ajax({
-                        url: '<?php echo $ajax_url; ?>',
+                        url: '<?php echo esc_url($ajax_url); ?>',
                         data: data_obj,
                         type: 'POST'
                     });
 
-                }).on('click', '.<?php echo $this->banner_css_class; ?> .notice-dismiss', function(e) {
+                }).on('click', '.<?php echo esc_attr($this->banner_css_class); ?> .notice-dismiss', function(e) {
                     e.preventDefault();
                     data_obj['wt_review_action_type'] = 'closed';
                     $.ajax({
-                        url: '<?php echo $ajax_url; ?>',
+                        url: '<?php echo esc_url($ajax_url); ?>',
                         data: data_obj,
                         type: 'POST',
                     });

@@ -10,7 +10,9 @@ $settings_button_title = isset($settings_button_title) ? $settings_button_title 
     <div class="left">
     </div>
     <div class="right">
-        <input type="submit" name="update_admin_settings_form" value="<?php esc_attr_e($settings_button_title,'wp-migration-duplicator'); ?>" class="button button-primary" style="float:right;"/>
+        <input type="submit" name="update_admin_settings_form" value="<?php 
+        // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+        esc_attr_e($settings_button_title,'wp-migration-duplicator'); ?>" class="button button-primary" style="float:right;"/>
           <input type="submit" name="test_ftp" value="<?php esc_attr_e("Test FTP",'wp-migration-duplicator'); ?>" class="button button-secondary test_ftp" style="float:right; margin-right:10px; "/>
        <div id="btn_loading" class="wf_btn_loader"></div>
           <!--<span class="spinner" style="margin-top:11px"></span>-->

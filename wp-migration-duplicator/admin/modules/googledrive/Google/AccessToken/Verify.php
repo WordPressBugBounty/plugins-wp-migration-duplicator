@@ -1,5 +1,5 @@
 <?php
-
+// phpcs:ignoreFile
 /*
  * Copyright 2008 Google Inc.
  *

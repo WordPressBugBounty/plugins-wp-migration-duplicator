@@ -22,7 +22,7 @@ if (!defined('WPINC')) {
 	<div class="wf_sub_tab_content" data-id="add-new-ftp" style="display:block;  padding: 12px;" id="wp_mgdp_form_wrapper">
 		<h3 class="wt_mgdp_form_title" id="wt_mgdp_form_title"> <?php esc_html_e("Add new FTP profile", 'wp-migration-duplicator'); ?></h3>
 
-		<form method="post" action="<?php echo esc_url($_SERVER["REQUEST_URI"]); ?>" id="wt_mgdp_ftp_form">
+		<form method="post" action="<?php echo esc_url($_SERVER["REQUEST_URI"]); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated ?>" id="wt_mgdp_ftp_form">
 			<input type="hidden" value="0" name="wt_mgdp_ftp_id" />
 			<input type="hidden" value="wp_mgdp_ftp_ajax" name="action" />
 			<input type="hidden" value="save_ftp" name="wt_mgdp_update_action" class="wt_mgdp_update_action" />
@@ -149,7 +149,7 @@ if (!defined('WPINC')) {
 
 			</table>
 			<?php
-			$settings_button_title = __('Save settings');
+			$settings_button_title = __('Save settings', 'wp-migration-duplicator');
 			include plugin_dir_path(WT_MGDP_PLUGIN_FILENAME) . "admin/views/admin-settings-save-button.php";
 			?>
 		</form>

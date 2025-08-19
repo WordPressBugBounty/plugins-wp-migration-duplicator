@@ -40,7 +40,7 @@ if ( ! defined( 'WPINC' ) ) {
                     $date_time = $date_time.'_00_00_00';
                     $dt = DateTime::createFromFormat('d-M-Y_H_i_s', $date_time);
                     $fatel_time =$dt->getTimestamp();
-                    $date_time = date('Y-m-d_H_i_s_A',$fatel_time);
+                    $date_time = date('Y-m-d_H_i_s_A',$fatel_time); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
                 }else{
                     $value_arr = strstr($value,'Export_') ? explode('Export_', $value):explode('Import_', $value);  
                     $date_time = '';
@@ -77,8 +77,8 @@ if ( ! defined( 'WPINC' ) ) {
 				<td class="log_file_name_col"><a class="wt_mgdp_view_log_btn" data-log-file="<?php echo esc_attr($file_name);?>"><?php echo esc_attr($file_name); ?></a></td>
 				<td>
 					<a class="wt_mgdp_delete_log" href="<?php echo esc_url(str_replace('_log_file_', $file_name, $delete_url));?>"><?php esc_html_e('Delete','wp-migration-duplicator'); ?></a>
-					| <a class="wt_mgdp_view_log_btn" data-log-file="<?php echo esc_attr($file_name);?>"><?php esc_html_e("View");?></a>
-					| <a class="wt_mgdp_download_log_btn" href="<?php echo esc_url(str_replace('_log_file_', $file_name, $download_url));?>"><?php esc_html_e("Download",'wp-migration-duplicator');?></a>
+					| <a class="wt_mgdp_view_log_btn" data-log-file="<?php echo esc_attr($file_name);?>"><?php esc_html_e('View','wp-migration-duplicator');?></a>
+					| <a class="wt_mgdp_download_log_btn" href="<?php echo esc_url(str_replace('_log_file_', $file_name, $download_url));?>"><?php esc_html_e('Download','wp-migration-duplicator');?></a>
 				</td>
 			</tr>
 			<?php

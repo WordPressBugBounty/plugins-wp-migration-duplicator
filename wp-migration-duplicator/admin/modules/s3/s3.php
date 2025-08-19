@@ -104,7 +104,7 @@ if (!class_exists('Wp_Migration_S3')) {
 
         public function out_settings_form($args)
         {
-            wp_enqueue_script($this->module_id, plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION);
+            wp_enqueue_script($this->module_id, plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), WP_MIGRATION_DUPLICATOR_VERSION); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
             $params = array(
                 'nonce' => wp_create_nonce($this->module_id),
                 'ajax_url'  => admin_url('admin-ajax.php'),
@@ -152,7 +152,7 @@ if (!class_exists('Wp_Migration_S3')) {
          */
         function check_s3bucket_option_used($out)
         {
-            $export_option_post = (isset($_POST['export_option'])) ? $_POST['export_option'] : $out['export_option'];
+            $export_option_post = (isset($_POST['export_option'])) ? sanitize_text_field(wp_unslash($_POST['export_option'])) : $out['export_option']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
             $export_option_post = Wp_Migration_Duplicator_Security_Helper::sanitize_item($export_option_post);
             $s3bucketname = $this->location;
             $cloud_storage_name = apply_filters('wt_migrator_cloud_storage_location', WT_MGDP_CLOUD_STORAGE_LOCATION);
@@ -174,7 +174,7 @@ if (!class_exists('Wp_Migration_S3')) {
                            unset($storage_location_array[0]);
                            $storage_location = implode('/', $storage_location_array);
                         }
-                        $file_name = (isset($_POST['s3bucket_file_name']) && '' != $_POST['s3bucket_file_name']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['s3bucket_file_name']) : date('Y-m-d-h-i-sa', time());
+                        $file_name = (isset($_POST['s3bucket_file_name']) && '' != $_POST['s3bucket_file_name']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['s3bucket_file_name']) : date('Y-m-d-h-i-sa', time()); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.DateTime.RestrictedFunctions.date_date
                       
                         if($storage_location){
                               $file_name =  $storage_location.'/'.$cloud_storage_name . '/' . $file_name . '.zip';
@@ -191,7 +191,7 @@ if (!class_exists('Wp_Migration_S3')) {
                              Webtoffe_logger::write_log( 'Export',$exceptions->getMessage() );
                             $out['status']  = false;
                             $out['msg']     =  __('Failed to upload file.<br/><br/><b>Possible Reasons</b><br/><b>1.</b> File path may be invalid.<br/><b>2.</b> Maybe File / Folder Permission missing for specified file or folder in path.<br/><b>3.</b> Write permission may be missing.', 'wp-migration-duplicator');
-                            Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' );
+                            Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
                             delete_option('wp_mgdp_log_id');
                              return $out;
                         }
@@ -222,21 +222,21 @@ if (!class_exists('Wp_Migration_S3')) {
                         $out['status']  = true;
                         unlink($out['backup_file']);
 						//unset($out['backup_file']);
-                        $out['msg']     =  __('Successfully uploaded !!', 'wp-migration-duplicator');
+                        $out['msg']     =  esc_html__('Successfully uploaded !!', 'wp-migration-duplicator');
                         Webtoffe_logger::write_log( 'Export','Zip File Successfully uploaded !! ' );
                     } catch (Exception $exception) {
-                        echo sprintf("%s error: %s", 's3bucket', $exception->getMessage()) . ' (' . $exception->getCode() . ')';
+                        echo esc_html(sprintf("%s error: %s", 's3bucket', esc_html($exception->getMessage()))) . ' (' . esc_html($exception->getCode()) . ')';
                         Webtoffe_logger::error($exception->getMessage());
                         Webtoffe_logger::write_log( 'Export',$exception->getMessage() );
                         $out['status']  = false;
-                        $out['msg']     =  __('Please check the authentication', 'wp-migration-duplicator');
+                        $out['msg']     =  esc_html__('Please check the authentication', 'wp-migration-duplicator');
                     }
                 } else {
                     $out['status']  = false;
-                    $out['msg']     =  __('Please Authenticate with your access token', 'wp-migration-duplicator');
+                    $out['msg']     =  esc_html__('Please Authenticate with your access token', 'wp-migration-duplicator');
                     Webtoffe_logger::write_log( 'Export','Please authenticate your google drive account.' );
                 }
-                Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' );
+                Webtoffe_logger::write_log( 'Export','---[ Export Ended at '.date('Y-m-d H:i:s').' ] --- ' );// phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
                 delete_option('wp_mgdp_log_id');
             }
             return $out;
@@ -250,15 +250,15 @@ if (!class_exists('Wp_Migration_S3')) {
         {
 
             if (!Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_PLUGIN_FILENAME, $this->module_id)) {
-                wp_die(__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
+                wp_die(esc_html__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
             }
 
-            $aws_accesskey = Wp_Migration_Duplicator_Security_Helper::sanitize_item((isset($_POST['access_key']) ? $_POST['access_key'] : ''));
-            $aws_secretkey = Wp_Migration_Duplicator_Security_Helper::sanitize_item((isset($_POST['secret_key']) ? $_POST['secret_key'] : ''));
-            $aws_s3_location = Wp_Migration_Duplicator_Security_Helper::sanitize_item((isset($_POST['s3_location']) ? $_POST['s3_location'] : ''));
+            $aws_accesskey = Wp_Migration_Duplicator_Security_Helper::sanitize_item((isset($_POST['access_key']) ? $_POST['access_key'] : ''));// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $aws_secretkey = Wp_Migration_Duplicator_Security_Helper::sanitize_item((isset($_POST['secret_key']) ? $_POST['secret_key'] : ''));// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $aws_s3_location = Wp_Migration_Duplicator_Security_Helper::sanitize_item((isset($_POST['s3_location']) ? $_POST['s3_location'] : ''));// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             
             if( empty($aws_accesskey) || empty($aws_secretkey) || empty($aws_s3_location)) {
-                wp_send_json_error(__('Check if all the fields have correct information and retry.', 'wp-migration-duplicator'));
+                wp_send_json_error(esc_html__('Check if all the fields have correct information and retry.', 'wp-migration-duplicator'));
             }
             try {
 
@@ -275,6 +275,7 @@ if (!class_exists('Wp_Migration_S3')) {
                 if(@strstr($msg,'SSL certificate problem')){
                   $msg = 'SSL certificate problem: unable to get local issuer certificate';  
                 }
+                // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
                 wp_send_json_error(__($msg, 'wp-migration-duplicator'));
             }
             $this->status = true;
@@ -290,7 +291,7 @@ if (!class_exists('Wp_Migration_S3')) {
             $options[self::$s3_location] = $this->location;
 
             Wp_Migration_Duplicator::update_webtoffee_migrator_option( $options );
-            wp_send_json_success(__('Authentication success!', 'wp-migration-duplicator'));
+            wp_send_json_success(esc_html__('Authentication success!', 'wp-migration-duplicator'));
         }
 
         /**
@@ -300,7 +301,7 @@ if (!class_exists('Wp_Migration_S3')) {
         function disconnect_s3bucket()
         {
             if (!Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_PLUGIN_FILENAME, $this->module_id)) {
-                wp_die(__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
+                wp_die(esc_html__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
             }
             $this->accesskey = '';
             $this->secretkey = '';
@@ -310,7 +311,7 @@ if (!class_exists('Wp_Migration_S3')) {
             $options[self::$s3_secretkey] = $this->secretkey;
             $options[self::$s3_location] = $this->location;
             Wp_Migration_Duplicator::update_webtoffee_migrator_option( $options );
-            wp_send_json_success(__('Disconnected!', 'wp-migration-duplicator'));
+            wp_send_json_success(esc_html__('Disconnected!', 'wp-migration-duplicator'));
         }
 
         /**
@@ -340,7 +341,7 @@ if (!class_exists('Wp_Migration_S3')) {
         public function wt_s3bucket_ajax_authentication()
         {
             if (!Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_PLUGIN_FILENAME, $this->module_id)) {
-                wp_die(__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
+                wp_die(esc_html__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
             }
             if( $this->connector ) {
                 $authenticated = $this->connector;
@@ -349,9 +350,9 @@ if (!class_exists('Wp_Migration_S3')) {
                 $authenticated = $this->is_authenticated();
             }
             if ($authenticated) {
-                wp_send_json_success(__('Authentication success!', 'wp-migration-duplicator'));
+                wp_send_json_success(esc_html__('Authentication success!', 'wp-migration-duplicator'));
             }
-            wp_send_json_error(__('Authentication failed', 'wp-migration-duplicator'));
+            wp_send_json_error(esc_html__('Authentication failed', 'wp-migration-duplicator'));
         }
         /**
          * import options
@@ -360,7 +361,7 @@ if (!class_exists('Wp_Migration_S3')) {
         function import_options($import_options)
         {
             if ($this->is_enabled()) {
-                $import_options['s3bucket'] = __('Amazon S3', 'wp-migration-duplicator');
+                $import_options['s3bucket'] = esc_html__('Amazon S3', 'wp-migration-duplicator');
             }
             return $import_options;
         }
@@ -376,7 +377,9 @@ if (!class_exists('Wp_Migration_S3')) {
                 <?php
                 $url = admin_url('admin.php?page=wp-migration-duplicator-settings#wt-s3bucket');
                 ?>
-                <span class="wt-migrator-authentication-error"><?php echo sprintf(wp_kses(__('Your account with Amazon S3 is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
+                <span class="wt-migrator-authentication-error"><?php
+                    // translators: 1: authentication link
+                    echo sprintf(wp_kses(__('Your account with Amazon S3 is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
                 <table class="wf-form-table wt_mgdp_import_options " style="max-width:650px;">
                     <tbody>
                         <tr>
@@ -385,7 +388,7 @@ if (!class_exists('Wp_Migration_S3')) {
                             <span class="wt-cli-cloud-status wt-cli-cloud-status-enabled">
                                 <span class="dashicons dashicons-saved"></span><?php esc_html_e('(Enabled)','wp-migration-duplicator');?>
                             </span>
-                                <a  href="<?php echo esc_url(admin_url('admin.php?page=wp-migration-duplicator-settings#wt-s3bucket'))?>"><?php echo esc_html__('Settings','wp-migration-duplicator-pro')?></a>
+                                <a  href="<?php echo esc_url(admin_url('admin.php?page=wp-migration-duplicator-settings#wt-s3bucket'))?>"><?php echo esc_html__('Settings','wp-migration-duplicator')?></a>
                             </td>
                         </tr>
                         <tr>
@@ -418,7 +421,7 @@ if (!class_exists('Wp_Migration_S3')) {
             if ('s3bucket' != $import_method) {
                 return $import_data;
             }
-            $error_message = __('The specified file could not be found on Amazon S3 Bucket','wp-migration-duplicator');
+            $error_message = esc_html__('The specified file could not be found on Amazon S3 Bucket','wp-migration-duplicator');
             $import_data['message'] = $error_message;
             
             if( $this->connector ) {
@@ -428,9 +431,9 @@ if (!class_exists('Wp_Migration_S3')) {
                 $connector = $this->is_authenticated();
             }
             if ( $connector ) {
-                $file_name = (isset($_POST['wt_mgdb_s3bucket_file'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['wt_mgdb_s3bucket_file']) : '';
+                $file_name = (isset($_POST['wt_mgdb_s3bucket_file'])) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['wt_mgdb_s3bucket_file']) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                 if ('' == $file_name) {
-                    $import_data['message'] = __('Please specify a file to import','wp-migration-duplicator');
+                    $import_data['message'] = esc_html__('Please specify a file to import','wp-migration-duplicator');
                     return $import_data;
                 }
 
@@ -457,11 +460,11 @@ if (!class_exists('Wp_Migration_S3')) {
                     $connector->getObject($s3bucketname, $file_name, $local_file);
                 } catch (Exception $e) {
                     Webtoffe_logger::error($e->getMessage());
-                    echo sprintf("%s error: %s", 's3bucket', $e->getMessage()) . ' (' . $e->getCode() . ')';
+                    echo esc_html(sprintf("%s error: %s", 's3bucket', esc_html($e->getMessage()))) . ' (' . esc_html($e->getCode()) . ')';
                     return $import_data;
                 }
                 $import_data['status'] = true;
-                $import_data['message'] = __('File has fetched from the Amazon S3 Bucket, now importing the file....','wp-migration-duplicator');
+                $import_data['message'] = esc_html__('File has fetched from the Amazon S3 Bucket, now importing the file....','wp-migration-duplicator');
                 $import_data['file'] = $local_file_url;
             }
             return $import_data;
@@ -478,7 +481,9 @@ if (!class_exists('Wp_Migration_S3')) {
                 <?php
                 $url = admin_url('admin.php?page=wp-migration-duplicator-settings#wt-s3bucket');
                 ?>
-                <span class="wt-migrator-authentication-error"><?php echo sprintf(wp_kses(__('Your account with Amazon S3 is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
+                <span class="wt-migrator-authentication-error"><?php 
+                // translators: 1: authentication link
+                echo sprintf(wp_kses(__('Your account with Amazon S3 is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
                 <table class="wf-form-table" style="max-width:650px;">
                     <tbody>
                         <tr>
@@ -487,7 +492,7 @@ if (!class_exists('Wp_Migration_S3')) {
                             <span class="wt-cli-cloud-status wt-cli-cloud-status-enabled" style="margin-left: 20px;">
                                 <span class="dashicons dashicons-saved"></span><?php esc_html_e('(Enabled)','wp-migration-duplicator');?>
                             </span>
-                                <a  href="<?php echo esc_url(admin_url('admin.php?page=wp-migration-duplicator-settings#wt-s3bucket'))?>"><?php echo esc_html__('Settings','wp-migration-duplicator-pro')?></a>
+                                <a  href="<?php echo esc_url(admin_url('admin.php?page=wp-migration-duplicator-settings#wt-s3bucket'))?>"><?php echo esc_html__('Settings','wp-migration-duplicator')?></a>
                             </td>
                         </tr>
                         <tr>
@@ -517,7 +522,9 @@ if (!class_exists('Wp_Migration_S3')) {
                 $file_name = isset($s3_settings['s3bucket_file_name']) && !empty($s3_settings['s3bucket_file_name']) ? $s3_settings['s3bucket_file_name']:'';
                 $url = admin_url('admin.php?page=wp-migration-duplicator-settings#wt-s3bucket');
                 ?>
-                <span class="wt-migrator-authentication-error"><?php echo sprintf(wp_kses(__('Your account with Amazon S3 is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
+                <span class="wt-migrator-authentication-error"><?php 
+                // translators: 1: authentication link
+                echo sprintf(wp_kses(__('Your account with Amazon S3 is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
                 <table class="wf-form-table" style="max-width:650px;">
                     <tbody>
                         <tr>
@@ -526,7 +533,7 @@ if (!class_exists('Wp_Migration_S3')) {
                             <span class="wt-cli-cloud-status wt-cli-cloud-status-enabled" style="margin-left: 20px;">
                                 <span class="dashicons dashicons-saved"></span><?php esc_html_e('(Enabled)','wp-migration-duplicator');?>
                             </span>
-                                <a  href="<?php echo esc_url(admin_url('admin.php?page=wp-migration-duplicator-settings#wt-s3bucket'))?>"><?php echo esc_html__('Settings','wp-migration-duplicator-pro')?></a>
+                                <a  href="<?php echo esc_url(admin_url('admin.php?page=wp-migration-duplicator-settings#wt-s3bucket'))?>"><?php echo esc_html__('Settings','wp-migration-duplicator')?></a>
                             </td>
                         </tr>
                         <tr>
@@ -548,7 +555,7 @@ if (!class_exists('Wp_Migration_S3')) {
         
         public function get_existing_backups() {
             if (!Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_PLUGIN_FILENAME)) {
-                wp_die(__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
+                wp_die(esc_html__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
             }
             $cloud_storage_name = apply_filters('wt_migrator_cloud_storage_location', WT_MGDP_CLOUD_STORAGE_LOCATION);
             $s3bucketname = $this->location;
@@ -582,7 +589,7 @@ if (!class_exists('Wp_Migration_S3')) {
 
                 } catch (Exception $e) {
                     Webtoffe_logger::error($e->getMessage());
-                    echo sprintf("%s error: %s", 's3bucket', $e->getMessage()) . ' (' . $e->getCode() . ')';
+                    echo esc_html(sprintf("%s error: %s", 's3bucket', esc_html($e->getMessage()))) . ' (' . esc_html($e->getCode()) . ')';
                     return false;
                 }
             }

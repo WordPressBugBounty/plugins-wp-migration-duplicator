@@ -293,7 +293,8 @@ class Wp_Migration_Duplicator_Admin
                                 'mail_msg' => __('Thanks for submitting your feedback!', 'wp-migration-duplicator'),
                                 'mail_empty_msg' => __('Email or message content empty', 'wp-migration-duplicator'),
                                 'term_error' => __('Terms and conditions not accepted', 'wp-migration-duplicator'),
-                                'error' => sprintf(__('An unknown error has occurred! Refer to our %stroubleshooting guide%s for assistance.'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
+								// translators: 1: troubleshooting guide link, 2: closing anchor tag
+                                'error' => sprintf(__('An unknown error has occurred! Refer to our %1$s troubleshooting guide %2$s for assistance.', 'wp-migration-duplicator'), '<a href="'.WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT.'" target="_blank">', '</a>'),
 			),
 			
 		);
@@ -398,24 +399,25 @@ class Wp_Migration_Duplicator_Admin
 	 */
 	public function wt_migrator_check_authentication()
 	{
-            if(strstr($_POST['cloud_storage'], "_schedule")){
-               $_POST['cloud_storage'] =  str_replace('_schedule', '', $_POST['cloud_storage']);
+            if(strstr($_POST['cloud_storage'], "_schedule")){ // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotValidated, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+               $_POST['cloud_storage'] =  str_replace('_schedule', '', sanitize_text_field(wp_unslash($_POST['cloud_storage']))); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
             }
+				// Nonce is handled in the function call	
 		if (!Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_PLUGIN_FILENAME, WT_MGDP_PLUGIN_FILENAME)) {
 			wp_die(esc_html__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
 		}
-		$cloud_storage_id = (isset($_POST['cloud_storage']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['cloud_storage']) : '');
+		$cloud_storage_id = (isset($_POST['cloud_storage']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['cloud_storage']) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$authenticated = apply_filters("wt_migrator_{$cloud_storage_id}_is_authenticated", false);
 		if ($authenticated) {
-			wp_send_json_success(__('Authentication success!', 'wp-migration-duplicator'));
+			wp_send_json_success(esc_html__('Authentication success!', 'wp-migration-duplicator'));
 		}
-		wp_send_json_error(__('Authentication failed', 'wp-migration-duplicator'));
+		wp_send_json_error(esc_html__('Authentication failed', 'wp-migration-duplicator'));
 	}
 	public function wt_migrator_populate_cloud_files() {
 		if (!Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_PLUGIN_FILENAME, WT_MGDP_PLUGIN_FILENAME)) {
 			wp_die(esc_html__('You do not have sufficient permission to perform this operation', 'wp-migration-duplicator'));
 		}
-		$cloud_storage_id = (isset($_POST['cloud_storage']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['cloud_storage']) : '');
+		$cloud_storage_id = (isset($_POST['cloud_storage']) ? Wp_Migration_Duplicator_Security_Helper::sanitize_item($_POST['cloud_storage']) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$backup_files = apply_filters("wt_migrator_{$cloud_storage_id}_load_backups", false);
 		
 		if ( $backup_files ) {
@@ -425,12 +427,13 @@ class Wp_Migration_Duplicator_Admin
 	}
         public function wp_mgdp_populate_popup() {
 
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $nonce = ( isset( $_REQUEST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '' );
 			if ( ! ( wp_verify_nonce( $nonce, WT_MGDP_PLUGIN_FILENAME ) ) || ! ( current_user_can( 'manage_options' ) ) ) {
 					return;
 			} 
 
-            $log_file_name=(isset($_POST['log_file']) ? sanitize_file_name($_POST['log_file']) : '');
+            $log_file_name=(isset($_POST['log_file']) ? sanitize_file_name(wp_unslash($_POST['log_file'])) : '');
 			if($log_file_name!="")
 			{
 				$ext_arr=explode(".", $log_file_name);
@@ -441,18 +444,21 @@ class Wp_Migration_Duplicator_Admin
 
 					if(file_exists($log_file_path))
 					{
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                                                 $file_pointer=@fopen($log_file_path, 'r');
 
                                                 if(!is_resource($file_pointer))
                                                 {
                                                         return $out;
                                                 }
+												// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
                                                 $data=fread($file_pointer, filesize($log_file_path));
-
+                                                // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
                                                 fclose($file_pointer);
 
 						$out['status']=1;
-						$out['html']='<div class="wt_iew_raw_log">'.nl2br(esc_html__($data)).'</div>';
+						// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+						$out['html']='<div class="wt_iew_raw_log">'.nl2br(esc_html__($data, 'wp-migration-duplicator')).'</div>';
 					}
 				}
 			}
@@ -464,9 +470,9 @@ class Wp_Migration_Duplicator_Admin
             
             $email = 'support@webtoffee.com';
             $subject = 'WebToffee WP Backup and Migration (Basic) - customer issue';
-            $message = 'Customer Email :'. $_POST['email'].' - Issue explanation :'.sanitize_text_field($_POST['message']);
+            $message = 'Customer Email :'. $_POST['email'].' - Issue explanation :'.sanitize_text_field($_POST['message']); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
             $headers = '';
-            $mail_attachment = get_attached_file(sanitize_text_field($_POST['file']));
+            $mail_attachment = get_attached_file(sanitize_text_field($_POST['file'])); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
             wp_mail( $email, $subject, $message,$headers,$mail_attachment );
             $out['status']=1;
             wp_send_json_success( $out );
@@ -492,9 +498,9 @@ class Wp_Migration_Duplicator_Admin
 	 */
 	public function download_file()
 	{
-		if (isset($_GET['wt_mgdp_download'])) {
+		if (isset($_GET['wt_mgdp_download'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if (Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_POST_TYPE)) { /* check nonce and role */ 
-				$file_name = (isset($_GET['file']) ? sanitize_text_field($_GET['file']) : '');
+				$file_name = (isset($_GET['file']) ? sanitize_text_field($_GET['file']) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 				if ($file_name != "") {
 					$file_arr = explode(".", $file_name);
 					$file_ext = end($file_arr);
@@ -502,16 +508,17 @@ class Wp_Migration_Duplicator_Admin
 						$file_path = Wp_Migration_Duplicator::$backup_dir . '/' . $file_name;
 						if (file_exists($file_path)) /* check existence of file */ {
                                                         ob_clean();
-                                                        @set_time_limit(16000);
-                                                        @ini_set('max_execution_time', '259200');
-                                                        @ini_set('max_input_time', '259200');
-                                                        @ini_set('session.gc_maxlifetime', '1200');
-                                                        @ini_set('memory_limit', '-1');
+                                                        @set_time_limit(16000); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                                                        @ini_set('max_execution_time', '259200'); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                                                        @ini_set('max_input_time', '259200'); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                                                        @ini_set('session.gc_maxlifetime', '1200'); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+                                                        @ini_set('memory_limit', '-1'); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
                                                         if (strlen(session_id()) > 0) session_write_close();
 
                                                         if (@ini_get('zlib.output_compression'))
-                                                            @ini_set('zlib.output_compression', 'Off');
+                                                            @ini_set('zlib.output_compression', 'Off'); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
 							 ob_end_clean();
+							 // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
                                                         $fp = @fopen($file_path, 'rb');
 
 							header('Pragma: public');
@@ -527,6 +534,7 @@ class Wp_Migration_Duplicator_Admin
                                                         if (ob_get_level()) ob_end_clean();
 
                                                         fpassthru($fp);
+                                                        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
                                                         fclose($fp);
 
 							/*$chunk_size = 1024 * 1024;
@@ -554,10 +562,10 @@ class Wp_Migration_Duplicator_Admin
 	*/
 	public function log_download_file()
 	{
-		if(isset($_GET['wt_mgdp_log_download']))
+		if(isset($_GET['wt_mgdp_log_download'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		{ 
 			if (Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_POST_TYPE)) { /* check nonce and role */ 
-				$file_name=(isset($_GET['file']) ? sanitize_text_field($_GET['file']) : '');
+				$file_name=(isset($_GET['file']) ? sanitize_text_field($_GET['file']) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 				if($file_name!="")
 				{
 					$file_arr=explode(".", $file_name);
@@ -579,14 +587,17 @@ class Wp_Migration_Duplicator_Admin
 						    //header('Content-Length: '.filesize($file_path));
 
 						    $chunk_size=1024 * 1024;
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 						    $handle=@fopen($file_path, 'rb');
 						    while(!feof($handle))
 						    {
+								// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
 						        $buffer = fread($handle, $chunk_size);
 						        echo esc_attr($buffer);
 						        ob_flush();
 						        flush();
 						    }
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 						    fclose($handle);
 						    exit();
 
@@ -597,10 +608,10 @@ class Wp_Migration_Duplicator_Admin
 		}
                 
                 /* delete action */
-		if(isset($_GET['wt_mgdp_log_delete'])) 
+		if(isset($_GET['wt_mgdp_log_delete']))  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		{
 			if (Wp_Migration_Duplicator_Security_Helper::check_write_access(WT_MGDP_POST_TYPE)) { /* check nonce and role */ 
-				$log_file_name=(isset($_GET['file']) ? sanitize_text_field($_GET['file']) : '');
+				$log_file_name=(isset($_GET['file']) ? sanitize_text_field($_GET['file']) : ''); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 				if($log_file_name!="")
 				{
 					$ext_arr=explode(".", $log_file_name);
@@ -651,13 +662,13 @@ class Wp_Migration_Duplicator_Admin
                 $tb='wt_mgdp_ftp';
                 $table_name = $wpdb->prefix.$tb;
                 if(!$this->wt_table_column_exists($table_name,'ftps')){
-                       $wpdb->query("ALTER TABLE `{$table_name}` ADD `ftps` INT(11) NOT NULL DEFAULT 0 AFTER `port`; ");
+                       $wpdb->query("ALTER TABLE `{$table_name}` ADD `ftps` INT(11) NOT NULL DEFAULT 0 AFTER `port`; "); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange	
                 }
                 if(!$this->wt_table_column_exists($table_name,'is_sftp')){
-                    $wpdb->query("ALTER TABLE `{$table_name}` ADD `is_sftp` INT(11) NOT NULL DEFAULT 0 AFTER `ftps`; ");
+                    $wpdb->query("ALTER TABLE `{$table_name}` ADD `is_sftp` INT(11) NOT NULL DEFAULT 0 AFTER `ftps`; "); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange
                 }
                 if(!$this->wt_table_column_exists($table_name,'passive_mode')){
-                    $wpdb->query("ALTER TABLE `{$table_name}` ADD `passive_mode` INT(11) NOT NULL DEFAULT 0 AFTER `is_sftp`; ");
+                    $wpdb->query("ALTER TABLE `{$table_name}` ADD `passive_mode` INT(11) NOT NULL DEFAULT 0 AFTER `is_sftp`; "); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange
                 }
             }
             
@@ -667,6 +678,7 @@ class Wp_Migration_Duplicator_Admin
         {
             global $wpdb;
 
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
             $column = $wpdb->get_results($wpdb->prepare(
                 "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s ",
                 DB_NAME,

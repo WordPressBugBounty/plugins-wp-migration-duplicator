@@ -11,9 +11,9 @@ $data_size_per_req = isset($advanced_settings['data_size_per_req']) ? $advanced_
 $db_record_per_req = isset($advanced_settings['db_record_per_req']) ? $advanced_settings['db_record_per_req'] : '';
 $file_per_req = isset($advanced_settings['file_per_req']) ? $advanced_settings['file_per_req'] : '';
 
-$start_time = isset($cron_settings['start_time']) ? date("D, M d, Y h:i A", $cron_settings['start_time']) : 'N/A';
+$start_time = isset($cron_settings['start_time']) ? date("D, M d, Y h:i A", $cron_settings['start_time']) : 'N/A'; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 $cron_status = isset($cron_settings['start_time']) && !empty($cron_settings['start_time']) ? 'Enable' : 'Disabled';
-$last_run = isset($cron_settings['last_run']) && ($cron_settings['last_run'] != 0 ) ? date("D, M d, Y h:i A", $cron_settings['last_run']) : 'N/A';
+$last_run = isset($cron_settings['last_run']) && ($cron_settings['last_run'] != 0 ) ? date("D, M d, Y h:i A", $cron_settings['last_run']) : 'N/A'; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 $cloud_type = isset($cron_settings['display_data']['cloud_details']) ? $cron_settings['display_data']['cloud_details'] : 'N/A';
 $interval = isset($cron_settings['display_data']['interval']) ? $cron_settings['display_data']['interval'] : 'day';
 
@@ -264,13 +264,22 @@ height: 20px;
         <div class="wt_buttom_arrange">
             <div class="second_div">
                 <div class="schedule-block">
-                    <p id="wt_schedule_status"><strong><?php esc_html_e('Schedule Status:', 'wp-migration-duplicator'); ?> </strong><?php esc_html_e($cron_status, 'wp-migration-duplicator'); echo wp_kses_post($cron_acion_delete);?> </p>
+                    <p id="wt_schedule_status"><strong><?php esc_html_e('Schedule Status:', 'wp-migration-duplicator'); ?> </strong><?php 
+                    // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                    esc_html_e($cron_status, 'wp-migration-duplicator'); echo wp_kses_post($cron_acion_delete);?> </p>
                     <div id="wi_schedule_info">
-                        <p><strong><?php esc_html_e('Cloud Type:', 'wp-migration-duplicator'); ?> </strong><?php esc_html_e($cloud_type, 'wp-migration-duplicator'); ?> </p>
-                        <p id="wt_next_backup"><span id="wt_last_backup_msg"><strong><?php esc_html_e('Next Backup:', 'wp-migration-duplicator'); ?>  </strong><?php esc_html_e($start_time, 'wp-migration-duplicator');
+                        <p><strong><?php esc_html_e('Cloud Type:', 'wp-migration-duplicator'); ?> </strong>
+                        <?php 
+                        // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                        esc_html_e($cloud_type, 'wp-migration-duplicator'); ?> </p>
+                        <p id="wt_next_backup"><span id="wt_last_backup_msg"><strong><?php esc_html_e('Next Backup:', 'wp-migration-duplicator'); ?>  </strong><?php 
+                        // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                        esc_html_e($start_time, 'wp-migration-duplicator');
                         echo wp_kses_post($cron_action); ?></span> </p> 
 
-                        <p><strong><?php esc_html_e('Last Backup:', 'wp-migration-duplicator'); ?> </strong><?php esc_html_e($last_run, 'wp-migration-duplicator'); ?></p>
+                        <p><strong><?php esc_html_e('Last Backup:', 'wp-migration-duplicator'); ?> </strong><?php 
+                        // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                        esc_html_e($last_run, 'wp-migration-duplicator'); ?></p>
                     </div>
                 </div>
             </div>
@@ -301,9 +310,6 @@ height: 20px;
 
                         <div style= "padding: 32px ">
                             <label>
-<!--                                <input type="radio" option="backup_default" name="export_type_default" value="files_and_db" checked />
-                                <span><?php echo esc_html__(sprintf('%sDatabase and Files (WordPress Files)%s', '<b>', '</b>'), 'wp-migration-duplicator') ?></span>
-                            </label><br><br><br><br>-->
                                 <label>
                                     <input type="checkbox" option="backup_default" name="export_type_db" value="db" checked/>
                                     <span><?php echo esc_html__(' Wordpress Database', 'wp-migration-duplicator') ?></span>
@@ -343,9 +349,6 @@ height: 20px;
                     <a  href="#"><?php echo esc_html__('Where to Backup?', 'wp-migration-duplicator'); ?></a>
                     <div class="wt-migrator-accordion-content" style ="border-top: 1px solid #E1E4E7;">
                         <p><?php esc_html_e('Select the backup storage location. Choosing “Local” will keep the backups only in the web-server/local-system.', 'wp-migration-duplicator'); ?></p>
-                        <!--                        <div>
-                                                                <div class="wt_warn_box wt_instruction_box "><p><?php esc_html_e(sprintf('%sNote%s :- This storage option is not recommended as failure of the local-system in any manner will make you lose the backup.', '<b>', '</b>')); ?></p></div>
-                                                       </div>-->
                         <?php do_action('wt_migrator_after_export_page_content'); ?>
                         <div style="height:30px">
                             <button name="wt_mgdp_export_click_btn" class="button button-primary" style="float:right;margin: 11px -22px;"><?php esc_html_e('Backup Now', 'wp-migration-duplicator'); ?></button>
@@ -389,7 +392,7 @@ height: 20px;
                                                             echo "checked=checked";
                                                         }
                                                         ?> > <?php esc_html_e('Every Month','wp-migration-duplicator'); ?></label>&emsp;&emsp;</br>
-                                                    <div class="wt_mgdp_cron_current_time stime" style="float: revert; margin: 0px 0px -8px 2px;"><b><?php esc_html_e('Current Server Time:'); ?></b> <span>--:--:-- --</span></div>
+                                                    <div class="wt_mgdp_cron_current_time stime" style="float: revert; margin: 0px 0px -8px 2px;"><b><?php esc_html_e('Current Server Time:', 'wp-migration-duplicator'); ?></b> <span>--:--:-- --</span></div>
                                                  <!--<label for="wt_mgdp_cron_interval_custom"><input type="radio" id="wt_mgdp_cron_interval_custom" name="wt_mgdp_cron_interval" value="custom"> <?php esc_html_e('Custom' ,'wp-migration-duplicator'); ?></label>-->
                                                 </div></td></tr><tr><td></td><td style="padding-left:20px">
                                             <div class="wt_mgdp_schedule_now_interval_sub_block wt_mgdp_schedule_custom_interval_block">
@@ -406,7 +409,9 @@ height: 20px;
                                                         $day_vl = strtolower($day);
                                                         $checked = ($day_vl == $day_value ? ' checked="checked"' : '');
                                                         ?>
-                                                        <label for="wt_mgdp_cron_day_<?php echo esc_attr($day_vl); ?>"><input type="radio" value="<?php echo esc_attr($day_vl); ?>" id="wt_mgdp_cron_day_<?php echo esc_attr($day_vl); ?>" name="wt_mgdp_cron_day" <?php echo esc_attr($checked); ?>> <?php esc_html_e($day,'wp-migration-duplicator'); ?></label>
+                                                        <label for="wt_mgdp_cron_day_<?php echo esc_attr($day_vl); ?>"><input type="radio" value="<?php echo esc_attr($day_vl); ?>" id="wt_mgdp_cron_day_<?php echo esc_attr($day_vl); ?>" name="wt_mgdp_cron_day" <?php echo esc_attr($checked); ?>> <?php 
+                                                        // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+                                                        esc_html_e($day,'wp-migration-duplicator'); ?></label>
                                                         <?php
                                                     }
                                                     ?>
@@ -467,15 +472,6 @@ height: 20px;
                             </table></div>
                         <table><tr><td style ="width: 172px"><div style="margin-bottom: 105px; margin-left: 28px;font-size: 14px;"><label><?php esc_html_e('Export Content', 'wp-migration-duplicator'); ?><label</label></div></td><td>
                                     <div style="padding-left: 105px; " >
-
-                                        <!--                                <label>
-                                                                            <input type="checkbox" option="backup" name="export_type" value="files_and_db" <?php
-                                        if ($export_type == "files_and_db") {
-                                            echo 'checked';
-                                        }
-                                        ?> />
-                                                                            <span><?php echo esc_attr__(sprintf('%sDatabase and Files (WordPress Files)%s', '<b>', '</b>'), 'wp-migration-duplicator') ?></span>
-                                                                        </label><br><br><br><br>-->
                                         <label>
                                             <input type="checkbox" option="backup" name="cron_export_type_db" value="db" <?php echo esc_attr($db_content); ?> />
                                             <span><?php echo esc_html__('Database', 'wp-migration-duplicator') ?></span>
@@ -486,14 +482,7 @@ height: 20px;
                                         </label><br><br><br><br>
 
                                     </div>
-                                </td></tr><tr> </table> <table style="margin-left: 10px;"><td style ="width: 200px;"><div class="exclude_folder" style="margin-bottom: 230px;margin-left: 15px;font-size: 14px;"><?php esc_html_e('Select the Files to Backup'); ?> </div></td><td><div class="exclude_folder" style="margin-left: 53px;width: 500px;">
-                                    <!--                <div class="wt-migrator-accordion-tab wt-migrator-accordion-exclude-settings postbox" style="border-bottom:1px solid #b7bdc5;width: 70%;
-                                        margin-left: 26%;">
-                                                        <a  href="#" style="padding: 5px;"><?php echo esc_attr__('Exclude Folders/files', 'wp-migration-duplicator'); ?></a>
-                                                        <div class="wt-migrator-accordion-content" style ="border-top: 2px dotted #b6b6b7;">
-                                                           
-                                                        </div>
-                                                    </div>-->
+                                </td></tr><tr> </table> <table style="margin-left: 10px;"><td style ="width: 200px;"><div class="exclude_folder" style="margin-bottom: 230px;margin-left: 15px;font-size: 14px;"><?php esc_html_e('Select the Files to Backup', 'wp-migration-duplicator'); ?> </div></td><td><div class="exclude_folder" style="margin-left: 53px;width: 500px;">
                                     <table id="datagrid">
                                         <!-- select all boxes -->
                                         <tr>

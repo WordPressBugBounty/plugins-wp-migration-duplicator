@@ -5,13 +5,15 @@ if (!defined('WPINC')) {
 ?>
 <div style="background: white;border:1px solid #E1E3E6;padding: 16px;">
 <div style = "display: flex">
-	<img src="<?php echo esc_url(plugins_url(basename(plugin_dir_path(WT_MGDP_PLUGIN_FILENAME))).'/admin/images/s3.svg'); ?>" style="max-width:30px;"/>&nbsp&nbsp<h3><?php echo __('Amazon S3', 'wp-migration-duplicator'); ?></h3> &nbsp&nbsp&nbsp&nbsp <?php if( $authenticated === true ):?> <h4 style="color: green;"><?php esc_html_e('Connected','wp-migration-duplicator');?> </h4> <?php endif; ?>
+	<img src="<?php echo esc_url(plugins_url(basename(plugin_dir_path(WT_MGDP_PLUGIN_FILENAME))).'/admin/images/s3.svg'); ?>" style="max-width:30px;"/>&nbsp&nbsp<h3><?php echo esc_html__('Amazon S3', 'wp-migration-duplicator'); ?></h3> &nbsp&nbsp&nbsp&nbsp <?php if( $authenticated === true ):?> <h4 style="color: green;"><?php esc_html_e('Connected','wp-migration-duplicator');?> </h4> <?php endif; ?>
 </div>
 <div class="wt_info_box" style="margin-bottom:35px;">
 <?php esc_html_e('AWS requires different types of security credentials depending on how you access AWS. For example, you need a user name and password to sign in to the AWS Management Console and you need access keys to make programmatic calls to AWS or to use the AWS Command Line Interface or AWS Tools for PowerShell.','wp-migration-duplicator');?>
 <ul style="list-style:disc; margin-left:20px;">
 		<li><?php esc_html_e('To connect Amazon S3 you need to obtain the access key & secret key from Amazon','wp-migration-duplicator'); ?></li>
-		<li><?php echo sprintf(wp_kses(__('The Access key and Secret key can be obtained from your IAM console. Kindly refer <a href="%s" target="_blank">Amazon developer documentation</a>', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html')); ?></li>
+		<li><?php
+			// translators: 1: Amazon developer documentation link
+		 echo sprintf(wp_kses(__('The Access key and Secret key can be obtained from your IAM console. Kindly refer <a href="%s" target="_blank">Amazon developer documentation</a>', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url('https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html')); ?></li>
 		<li><?php esc_html_e('To update the credentials: disconnect, update and authenticate.','wp-migration-duplicator'); ?></li>
 	</ul>
 </div>

@@ -1,5 +1,5 @@
 <?php
-
+// phpcs:ignoreFile
 /**
  * THIS FILE IS FOR BACKWARDS COMPATIBLITY ONLY
  *
