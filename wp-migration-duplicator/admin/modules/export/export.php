@@ -397,7 +397,7 @@ class Wp_Migration_Duplicator_Export
 			'created_at' => $tme,
 			'updated_at' => $tme,
 		);
-                if($target_tables){
+                if(! empty( $target_tables )){
                     $db_import_help_data = array();
                    $target_tables_save=array();
                    $db_import_help_data['domain_name'] = get_option('siteurl');

@@ -44,6 +44,7 @@ namespace phpseclib\Net;
  * @author  Jim Wigginton <terrafrost@php.net>
  * @access  public
  */
+#[\AllowDynamicProperties]
 class SFTP extends SSH2
 {
     /**
@@ -431,7 +432,7 @@ class SFTP extends SSH2
      */
     function login($username)
     {
-        if (!call_user_func_array('parent::login', func_get_args())) {
+        if (!call_user_func_array(array(parent::class, 'login'), func_get_args())) {
             return false;
         }
 

@@ -5,7 +5,7 @@ Tags:  wordpress migration, backup and restore wordpress, wordpress backup, data
 Requires at least: 3.3
 Tested up to: 6.8
 Requires PHP: 5.6
-Stable tag: 1.5.6
+Stable tag: 1.5.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -118,15 +118,13 @@ Yes. You can migrate your WordPress site between any hosts with the plugin.
 
 == Changelog ==
 
-= 1.5.6  2025-08-20 =
-* Tested OK with WordPress 6.8.2
-* Plugin Check plugin fixes
+= 1.5.7  2025-09-16 =
+* Google Drive backup(Requires PHP > 8)
 
 
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-migration-duplicator/trunk/changelog.txt)
 
 == Upgrade notice ==
 
-= 1.5.6 =
-* Tested OK with WordPress 6.8.2
-* Plugin Check plugin fixes
+= 1.5.7 =
+* Google Drive backup(Requires PHP > 8)

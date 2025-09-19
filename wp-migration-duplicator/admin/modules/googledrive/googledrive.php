@@ -206,7 +206,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                             }
                             fclose($handle); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
                             $out['status']  = true;
-                            unlink($out['backup_file']);
+                            wp_delete_file($out['backup_file']);
                             $out['msg']     =  __('Successfully uploaded !!', 'wp-migration-duplicator');
                             Webtoffe_logger::write_log( 'Export','Zip File Successfully uploaded !! ' );
                                      
@@ -269,7 +269,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                     'access_type' => 'offline',
                     'approval_prompt' => 'force'
                 );
-                $url = 'https://accounts.google.com/o/oauth2/auth?'.http_build_query($params, null, '&');
+                $url = 'https://accounts.google.com/o/oauth2/auth?'.http_build_query($params, '', '&');
                 
                 header('Location: '.$url);   
             }
@@ -434,7 +434,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                 ?>
                 <span class="wt-migrator-authentication-error"><?php
                 // translators: 1: authentication link
-                echo sprintf(wp_kses(esc_html__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
+                echo wp_kses_post(sprintf(__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), esc_url($url))); ?></span>
                 <table class="wf-form-table wt_mgdp_import_options " style="max-width:650px;">
                     <tbody>
                         <tr>
@@ -561,7 +561,7 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
                 ?>
                 <span class="wt-migrator-authentication-error"><?php
                 // translators: 1: authentication link
-                echo sprintf(wp_kses_post(__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url)); ?></span>
+                echo wp_kses_post(sprintf(__('Your account with Google drive is not authenticated please click <a href="%s">here</a> to authenticate', 'wp-migration-duplicator'), esc_url($url))); ?></span>
                 <table class="wf-form-table" style="max-width:650px;">
                     <tbody>
                         <tr>
