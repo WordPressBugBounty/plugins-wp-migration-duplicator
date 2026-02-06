@@ -97,7 +97,7 @@ class Wp_Migration_Duplicator {
 		if ( defined( 'WP_MIGRATION_DUPLICATOR_VERSION' ) ) {
 			$this->version = WP_MIGRATION_DUPLICATOR_VERSION;
 		} else {
-			$this->version = '1.5.7';
+			$this->version = '1.5.8';
 		}
 		$this->plugin_name = 'wp-migration-duplicator';
 
