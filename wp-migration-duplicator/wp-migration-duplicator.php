@@ -12,7 +12,7 @@
  * Plugin Name:       WebToffee WP Backup and Migration
  * Plugin URI:        https://wordpress.org/plugins/wp-migration-duplicator/
  * Description:       Migrate WordPress contents and database quickly with ease.
- * Version:           1.5.8
+ * Version:           1.5.9
  * Author:            WebToffee
  * Author URI:        https://www.webtoffee.com/
  * License:           GPL-3.0+
@@ -40,7 +40,7 @@ if(!defined('WP_MIGRATION_DUPLICATOR_VERSION')) //check plugin file already incl
     /**
      * Currently plugin version.
      */
-    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.5.8' );
+    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.5.9' );
 }
 if ( !defined( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT' ) ) {
 	define( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT', 'https://www.webtoffee.com/finding-php-error-logs-in-migrator-plugin/' );
@@ -109,8 +109,7 @@ function wt_wp_migration_duplicator_plugin_action_links_basic( $links ) {
     $plugin_links = array(
 		'<a href="' . admin_url( 'admin.php?page=wp-migration-duplicator' ) . '">' . esc_html__( 'Settings', 'wp-migration-duplicator' ) . '</a>',
 		'<a href="https://www.webtoffee.com/wordpress-backup-migration-user-guide/" target="_blank">' . esc_html__( 'Documentation', 'wp-migration-duplicator' ) . '</a>',
-                '<a href="https://wordpress.org/support/plugin/wp-migration-duplicator/#new-topic-0" target="_blank">' . esc_html__( 'Support', 'wp-migration-duplicator' ) . '</a>',
-                '<a href="https://www.webtoffee.com/plugins/" target="_blank"  style="color:#3db634;">' . esc_html__( 'Premium Plugins', 'wp-migration-duplicator' ) . '</a>',
+                '<a href="https://wordpress.org/support/plugin/wp-migration-duplicator/#new-topic-0" target="_blank">' . esc_html__( 'Support', 'wp-migration-duplicator' ) . '</a>',                
                 '<a target="_blank" style="color:#f909ff;" href="https://wordpress.org/support/plugin/wp-migration-duplicator/reviews#new-post">' . esc_html__( 'Review', 'wp-migration-duplicator' ) . '</a>',
             );
 
