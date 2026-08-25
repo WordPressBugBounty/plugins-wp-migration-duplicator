@@ -18,7 +18,7 @@
                                      var wt_mgdp_ftpuser = $('input[name="wt_mgdp_ftpuser"]').val();
                                      var wt_mgdp_ftppassword = $('input[name="wt_mgdp_ftppassword"]').val();
                                      var wt_mgdp_ftpport = $('input[name="wt_mgdp_ftpport"]').val();
-                                    var is_sftp = $('input[name="wt_mgdp_is_sftp"]').val();
+                                    var is_sftp = $('input[name="wt_mgdp_is_sftp"]:checked').val();
                                      if(wt_mgdp_hostname == '' || wt_mgdp_ftpuser =='' || wt_mgdp_ftppassword == '' || wt_mgdp_ftppassword ==''){
                                         wp_migration_duplicator_notify_msg.error(wp_migration_duplicator_ftp.msgs.some_mandatory);
                                          return true;
@@ -239,5 +239,3 @@
 
 	});
 })( jQuery );
-
-

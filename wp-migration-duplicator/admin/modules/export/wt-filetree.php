@@ -81,6 +81,7 @@ class Wt_File_Tree {
 							$php_file_tree .= "<input type=\"checkbox\" name=\"mgdp-exclude-file\" value=\"".$input_value."\" checked='checked'/>";
 						}
 						$php_file_tree .= "<a path=\"".$directory."/".$this_file."\" href=\"#\">" . htmlspecialchars($this_file) . "</a>";
+						$php_file_tree .= $this->wt_file_tree_dir( "$directory/$this_file", $excluded_items, $extensions, $cron, false );
 						$php_file_tree .= "</li>";
 					} else {
 

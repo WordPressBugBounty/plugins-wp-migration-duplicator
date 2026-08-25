@@ -221,8 +221,7 @@ $reasons = array(
                     },
                     beforeSend: function () {
                         button.addClass('disabled');
-                        button.text('Processing...');
-                    },
+                        button.text('<?php echo esc_js(__('Processing...', 'wp-migration-duplicator')); ?>');                    },
                     complete: function () {
                         modal.removeClass('modal-active');
                     }

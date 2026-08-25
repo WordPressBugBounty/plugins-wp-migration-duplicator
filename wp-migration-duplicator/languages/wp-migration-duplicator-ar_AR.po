@@ -1054,7 +1054,7 @@ msgstr "https://www.webtoffee.com/"
 #~ msgstr "المصادقة فشلت !!! حاول مرة اخرى."
 
 #~ msgid ""
-#~ "You need to authenticate your Google account with Wordpress Backup & "
+#~ "You need to authenticate your Google account with WordPress Backup & "
 #~ "Migration prior to export/import."
 #~ msgstr ""
 #~ "تحتاج إلى مصادقة حساب Google الخاص بك مع WebToffee WP Backup and Migration قبل "

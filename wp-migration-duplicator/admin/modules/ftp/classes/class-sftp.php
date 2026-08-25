@@ -12,21 +12,37 @@ class Wt_mgdp_Sftp
     */
     public function test_sftp($profile, $out)
     {
-        
-        if($this->connect($profile['host'], $profile['ftpport']))
-        {
-            if($this->login($profile['user_name'], $profile['password']))
+        try {
+            if($this->connect($profile['host'], $profile['ftpport']))
             {
-                $out=__('Successfully tested.', 'wp-migration-duplicator');
-                return wp_send_json_success($out);
+                if($this->login($profile['user_name'], $profile['password']))
+                {
+                    $out=__('Successfully tested.', 'wp-migration-duplicator');
+                    return wp_send_json_success($out);
+                }else
+                {
+                    $out=__('SFTP connection failed.', 'wp-migration-duplicator');
+                    return wp_send_json_error($out);
+                }
             }else
             {
-                $out=__('SFTP connection failed.', 'wp-migration-duplicator');
+                $out=__('Failed to establish SFTP connection.', 'wp-migration-duplicator');
                 return wp_send_json_error($out);
             }
-        }else
-        {
-            $out=__('Failed to establish SFTP connection.', 'wp-migration-duplicator');
+        } catch (\Exception $e) {
+            if (class_exists('Webtoffe_logger')) {
+                Webtoffe_logger::write_log('FTP', 'SFTP test connection failed with exception: ' . $e->getMessage());
+            }
+            $out = __('Failed to establish SFTP connection: ', 'wp-migration-duplicator') . $e->getMessage();
+            return wp_send_json_error($out);
+        } catch (\Throwable $e) {
+            // Covers TypeError/Error thrown by the underlying phpseclib library
+            // (e.g. missing crypto extension, PHP-version incompatibility)
+            // that wouldn't be caught by \Exception alone.
+            if (class_exists('Webtoffe_logger')) {
+                Webtoffe_logger::write_log('FTP', 'SFTP test connection failed with a fatal error: ' . $e->getMessage());
+            }
+            $out = __('Failed to establish SFTP connection: ', 'wp-migration-duplicator') . $e->getMessage();
             return wp_send_json_error($out);
         }
     }
@@ -34,27 +50,28 @@ class Wt_mgdp_Sftp
 	public function download($profile, $local_file, $remote_file, $out)
 	{
 		$out['status'] = false;
-		if($this->connect($profile['server'], $profile['port']))
-		{
-			if($this->login($profile['user_name'], $profile['password']))
+		try {
+			if($this->connect($profile['server'], $profile['port']))
 			{
-                $file_data=$this->get_contents($remote_file);
-                if(!empty($file_data))
-                {
-                    if(@file_put_contents($local_file, $file_data))
-                    {
-                        $out['msg']=__('Downloaded successfully.', 'wp-migration-duplicator');
-                        $out['status'] = true;
-                    }else
-                    {
-                        $out['msg']=__('Unable to create temp file.', 'wp-migration-duplicator');
-                        $out['status']  = false;
-                    }                       
-                }else
-                {
-                    $out['msg']=__('Failed to download file.<br/><br/><b>Possible Reasons</b><br/><b>1.</b> File path may be invalid.<br/><b>2.</b> Maybe File / Folder Permission missing for specified file or folder in path.<br/><b>3.</b> Read permission may be missing.', 'wp-migration-duplicator');
-                    $out['status']  = false;
-                }
+				if($this->login($profile['user_name'], $profile['password']))
+				{
+	                $file_data=$this->get_contents($remote_file);
+	                if(!empty($file_data))
+	                {
+	                    if(@file_put_contents($local_file, $file_data))
+	                    {
+	                        $out['msg']=__('Downloaded successfully.', 'wp-migration-duplicator');
+	                        $out['status'] = true;
+	                    }else
+	                    {
+	                        $out['msg']=__('Unable to create temp file.', 'wp-migration-duplicator');
+	                        $out['status']  = false;
+	                    }                       
+	                }else
+	                {
+	                    $out['msg']=__('Failed to download file.<br/><br/><b>Possible Reasons</b><br/><b>1.</b> File path may be invalid.<br/><b>2.</b> Maybe File / Folder Permission missing for specified file or folder in path.<br/><b>3.</b> Read permission may be missing.', 'wp-migration-duplicator');
+	                    $out['status']  = false;
+	                }
 			}else
 			{
 				$out['msg']=__('SFTP connection failed.', 'wp-migration-duplicator');
@@ -65,44 +82,74 @@ class Wt_mgdp_Sftp
 			$out['msg']=__('Failed to establish SFTP connection.', 'wp-migration-duplicator');
                         $out['status']  = false;
 		}
+		} catch (\Throwable $e) {
+			if (class_exists('Webtoffe_logger')) {
+				Webtoffe_logger::write_log('FTP', 'SFTP download failed with exception: ' . $e->getMessage());
+			}
+			$out['msg'] = __('Failed to establish SFTP connection: ', 'wp-migration-duplicator') . $e->getMessage();
+			$out['status'] = false;
+		}
 		return $out;
 	}
     public function upload($profile, $local_file, $remote_file, $out)
     {
         $out['response'] = false;
-        if($this->connect($profile['server'], $profile['port']))
-        {
-            if($this->login($profile['user_name'], $profile['password']))
+        try {
+            if($this->connect($profile['server'], $profile['port']))
             {
-                if($this->put_contents($remote_file, $local_file))
+                if($this->login($profile['user_name'], $profile['password']))
                 {
-                    $out['msg']=__('Uploaded successfully.', 'wp-migration-duplicator');
-                    $out['status'] = true;
+                    if($this->put_contents($remote_file, $local_file))
+                    {
+                        $out['msg']=__('Uploaded successfully.', 'wp-migration-duplicator');
+                        $out['status'] = true;
+                    }else
+                    {
+                        $out['msg']=__('Failed to upload file.<br/><br/><b>Possible Reasons</b><br/><b>1.</b> File path may be invalid.<br/><b>2.</b> Maybe File / Folder Permission missing for specified file or folder in path.<br/><b>3.</b> Write permission may be missing.', 'wp-migration-duplicator');
+                        $out['status']  = false;
+                    }
                 }else
                 {
-                    $out['msg']=__('Failed to upload file.<br/><br/><b>Possible Reasons</b><br/><b>1.</b> File path may be invalid.<br/><b>2.</b> Maybe File / Folder Permission missing for specified file or folder in path.<br/><b>3.</b> Write permission may be missing.', 'wp-migration-duplicator');
+                    $out['msg']=__('SFTP login failed.', 'wp-migration-duplicator');
                     $out['status']  = false;
                 }
             }else
             {
-                $out['msg']=__('SFTP login failed.', 'wp-migration-duplicator');
+                $out['msg']=__('Failed to establish SFTP connection.', 'wp-migration-duplicator');
                 $out['status']  = false;
             }
-        }else
-        {
-            $out['msg']=__('Failed to establish SFTP connection.', 'wp-migration-duplicator');
-            $out['status']  = false;
+        } catch (\Throwable $e) {
+            if (class_exists('Webtoffe_logger')) {
+                Webtoffe_logger::write_log('FTP', 'SFTP upload failed with exception: ' . $e->getMessage());
+            }
+            $out['msg'] = __('Failed to establish SFTP connection: ', 'wp-migration-duplicator') . $e->getMessage();
+            $out['status'] = false;
         }
         return $out;
     }
 	private function login($username, $password)
 	{
-		return $this->link->login($username, $password) ? true : false;
+		try {
+			return $this->link->login($username, $password) ? true : false;
+		} catch (\Throwable $e) {
+			if (class_exists('Webtoffe_logger')) {
+				Webtoffe_logger::write_log('FTP', 'SFTP login failed with exception: ' . $e->getMessage());
+			}
+			return false;
+		}
 	} 
     private function connect($hostname, $port = 22)
     {
-        $this->link=new \phpseclib\Net\SFTP($hostname, $port);
-        return ($this->link ? true : false);
+        try {
+            $this->link=new \phpseclib\Net\SFTP($hostname, $port);
+            return ($this->link ? true : false);
+        } catch (\Throwable $e) {
+            if (class_exists('Webtoffe_logger')) {
+                Webtoffe_logger::write_log('FTP', "SFTP connect to $hostname:$port failed with exception: " . $e->getMessage());
+            }
+            $this->link = false;
+            return false;
+        }
     }
 
     private function put_contents($file, $local_file)

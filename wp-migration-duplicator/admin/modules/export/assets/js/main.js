@@ -1,3 +1,52 @@
+/**
+ * Recursively walk a file-tree <ul> and return the minimal list of paths
+ * that must be excluded so the resulting backup:
+ *   - fully excludes any directory whose entire subtree is unchecked
+ *     (its own path is enough, no need to list every descendant)
+ *   - never excludes a directory that still has at least one checked
+ *     item underneath it, so the full folder chain down to any single
+ *     selected file is always preserved in the export
+ *   - individually excludes only the specific unchecked files/folders
+ *     inside an otherwise partially-included directory
+ *
+ * Shared across both export flows (immediate export and scheduled export),
+ * which live in separate closures below - keep this at top level so both
+ * can call it.
+ */
+function wt_collect_tree_excludes($ul) {
+	var excludes = [];
+	if (!$ul || !$ul.length) {
+		return excludes;
+	}
+	$ul.children('li').each(function () {
+		var $li = jQuery(this);
+		var $input = $li.children('input[type="checkbox"]');
+		var $child_ul = $li.children('ul');
+
+		if ($child_ul.length) {
+			// Directory node
+			var $descendant_inputs = $child_ul.find('input[type="checkbox"]');
+			var has_checked_descendant = $descendant_inputs.filter(':checked').length > 0;
+
+			if (!$input.is(':checked') && !has_checked_descendant) {
+				// Entire subtree (including this folder itself) is excluded -
+				// one entry is enough, no need to recurse further.
+				excludes.push($input.val());
+			} else {
+				// Partially or fully included - keep this folder's path chain
+				// intact and only collect the specific excluded items within it.
+				excludes = excludes.concat(wt_collect_tree_excludes($child_ul));
+			}
+		} else {
+			// File (leaf) node
+			if (!$input.is(':checked')) {
+				excludes.push($input.val());
+			}
+		}
+	});
+	return excludes;
+}
+
 (function( $ ) {
 	'use strict';
 	$(function() {
@@ -156,20 +205,12 @@
                             $('body').css('overflow', 'auto');
                         });
 
-                        $('[name="usrselectall"]').off('click').on('click', function(){// Iterate each checkbox
-                            $(document.querySelectorAll('#wt_exclude_folders ul:nth-child(1) > li > input[type=checkbox]')).prop('checked', true);
+                        $('#usrselectall_toggle').off('change').on('change', function(){
+                            $('#wt_exclude_folders input[type="checkbox"]').prop('checked', $(this).is(':checked'));
                         });
 
-                        $('[name="usrunselectall"]').off('click').on('click', function(){
-                            $(document.querySelectorAll('#wt_exclude_folders ul:nth-child(1) > li > input[type=checkbox]')).prop('checked', false);
-                        });
-
-                        $('[name="usrselectall_def"]').off('click').on('click', function(){// Iterate each checkbox
-                            $(document.querySelectorAll('#wt_exclude_folders_deafult ul:nth-child(1) > li > input[type=checkbox]')).prop('checked', true);
-                        });
-
-                        $('[name="usrunselectall_def"]').off('click').on('click', function(){
-                            $(document.querySelectorAll('#wt_exclude_folders_deafult ul:nth-child(1) > li > input[type=checkbox]')).prop('checked', false);
+                        $('#usrselectall_toggle_def').off('change').on('change', function(){
+                            $('#wt_exclude_folders_deafult input[type="checkbox"]').prop('checked', $(this).is(':checked'));
                         });
 
                         $('[name="wt_mgdp_export_btn"]').off('click').on('click', function(e){
@@ -403,10 +444,9 @@
                         wf_progress_bar.updateLabel($('.wf_export_sub'), sub_label);
                     },
                     getExcludeArray: function () {
-                        $(document.querySelectorAll('#wt_exclude_folders_deafult ul:nth-child(1) > li > input[type=checkbox]:not(:checked)')).each(function () {
-                            wt_export.exclude_arr.push($(this).val());
-
-                        });
+                        wt_export.exclude_arr = wt_export.exclude_arr.concat(
+                            wt_collect_tree_excludes($('#wt_exclude_folders_deafult > ul').first())
+                        );
                     },
                     getFTPDetailsArray: function () {
                         wt_export.export_option = $('select[name="wt_mgdb_export_option"]').val();
@@ -556,28 +596,61 @@
 
                         $(".mgdp-directory a").click(function (e) {
                             e.preventDefault();
-                            if (!$(this).prev('input[name="mgdp-exclude-file"]').is(":checked")) {
-                                return;
-                            }
                             $(this).parent().find("ul:first").slideToggle("medium");
                             $(this).closest('.mgdp-directory').toggleClass('active');
                             if ($(this).parent().attr('className') == "mgdp-directory")
                                 return false;
                         });
 
-
-                        $('.mgdp-directory > input').on('change', function () {
-                            if ($(this).is(":checked")) {
-                                $(this).parent().find("ul:first").hide("medium");
-                                $(this).parent().find("ul:first input").attr('disabled', 'disabled');
-                                $(this).next('a').css('cursor', 'default');
-                                $(this).parent().find("ul:first input").removeAttr('checked');
-
-                            } else {
-                                $(this).parent().find("ul:first input").removeAttr('disabled');
-                                $(this).next('a').css('cursor', 'pointer');
-                            }
+                        /**
+                         * Cascade DOWN: (un)checking a directory checkbox applies the same
+                         * state to every descendant checkbox (files and sub-directories).
+                         */
+                        $(document).on('change', '.mgdp-directory > input[type="checkbox"]', function () {
+                            var is_checked = $(this).is(":checked");
+                            $(this).parent().find("ul:first input[type=\"checkbox\"]").prop('checked', is_checked);
                         });
+
+                        /**
+                         * Cascade UP: unchecking any checkbox (file or directory) unchecks its
+                         * parent directory checkbox, all the way up to the root. Re-checking a
+                         * checkbox re-checks the parent only if every sibling under that parent
+                         * is now checked again - i.e. classic "select all" tri-state behaviour.
+                         */
+                        $(document).on('change', '.mgdp-file-tree input[type="checkbox"]', function () {
+                            wt_export_exclude.updateAncestors($(this));
+                            wt_export_exclude.syncSelectAllToggle($(this));
+                        });
+                    },
+                    updateAncestors: function ($input) {
+                        var $parent_li = $input.closest('ul').closest('li.mgdp-directory');
+                        if ($parent_li.length === 0) {
+                            return;
+                        }
+                        var $parent_input = $parent_li.children('input[type="checkbox"]');
+                        var $sibling_inputs = $parent_li.children('ul').children('li').children('input[type="checkbox"]');
+                        var all_checked = $sibling_inputs.length === $sibling_inputs.filter(':checked').length;
+
+                        if ($parent_input.prop('checked') !== all_checked) {
+                            $parent_input.prop('checked', all_checked);
+                        }
+                        wt_export_exclude.updateAncestors($parent_input);
+                    },
+                    /**
+                     * Keep the "Select all" checkbox in sync with the tree it controls:
+                     * checked only when every checkbox in that tree is checked, unchecked
+                     * the moment any single item in the tree gets unchecked.
+                     */
+                    syncSelectAllToggle: function ($input) {
+                        var $container = $input.closest('#wt_exclude_folders, #wt_exclude_folders_deafult');
+                        if ($container.length === 0) {
+                            return;
+                        }
+                        var $all_inputs = $container.find('input[type="checkbox"]');
+                        var all_checked = $all_inputs.length > 0 && $all_inputs.length === $all_inputs.filter(':checked').length;
+                        var toggle_id = ($container.attr('id') === 'wt_exclude_folders') ? '#usrselectall_toggle' : '#usrselectall_toggle_def';
+
+                        $(toggle_id).prop('checked', all_checked);
                     }
                 }
 		wt_export_exclude.Set();
@@ -641,12 +714,7 @@ var wt_mgdp_cron_js = ( function ( $ ) {
                     wt_mgdp_cron_js.bind_clock();
                     wt_mgdp_cron_js.bind_form_toggle();
                 },
-                
-                jsFunctiontest: function (test)
-                {
-                    alert("Hello! I am an alert box!!");
-                },
-                
+
                 bind_form_toggle: function ()
                 {
                     wt_mgdp_cron_js.toggle_interval_fields(jQuery('[name="wt_mgdp_cron_interval"]:checked').val());
@@ -909,9 +977,9 @@ var wt_mgdp_cron_js = ( function ( $ ) {
                     }
                 },
                 getExcludeArray_schedule: function () {
-                    $(document.querySelectorAll('#wt_exclude_folders ul:nth-child(1) > li > input[type=checkbox]:not(:checked)')).each(function () {
-                        wt_mgdp_cron_js.exclude_arr.push($(this).val());
-                    });
+                    wt_mgdp_cron_js.exclude_arr = wt_mgdp_cron_js.exclude_arr.concat(
+                        wt_collect_tree_excludes($('#wt_exclude_folders > ul').first())
+                    );
                 },
                 getGoogleDriveDetailsArray_schedule: function () {
                     wt_mgdp_cron_js.export_option = $('select[name="wt_mgdb_export_option_schedule"]').val();

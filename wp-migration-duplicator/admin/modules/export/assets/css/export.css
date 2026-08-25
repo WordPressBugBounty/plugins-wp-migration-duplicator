@@ -109,3 +109,13 @@ ul.mgdp-file-tree {
 .mgdp-file-tree li.ext-xls  a{ background-image: url(images/xls.png); }
 .mgdp-file-tree li.ext-xml  a{ background-image: url(images/code.png); }
 .mgdp-file-tree li.ext-zip  a{ background-image: url(images/zip.png); }
+
+.wt_mgdp_select_all_label {
+	color: #0000ff;
+	cursor: pointer;
+}
+.wt_mgdp_select_all_label input[type="checkbox"] {
+	accent-color: #2271b1;
+	vertical-align: middle;
+	margin-right: 4px;
+}

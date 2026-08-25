@@ -94,7 +94,7 @@ if (!defined('ABSPATH')) {
         <div class="wt_mgdp_warn_box">
             <p><?php 
         // translators: 1: opening bold tag, 2: closing bold tag
-        echo wp_kses_post(sprintf('%1$s Note %2$s :- The current user will be logged out of the site after import if the same credentials does not exist in the imported database. In this case, use your login credentials from the imported site to log in successfully.', '<b>', '</b>')); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+        echo wp_kses_post(sprintf(__('%1$s Note %2$s :- The current user will be logged out of the site after import if the same credentials does not exist in the imported database. In this case, use your login credentials from the imported site to log in successfully.', 'wp-migration-duplicator'), '<b>', '</b>'));    
          ?>
          </p></div>
 

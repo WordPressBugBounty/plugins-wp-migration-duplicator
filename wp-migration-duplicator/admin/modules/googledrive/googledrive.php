@@ -350,24 +350,69 @@ if (!class_exists('Wp_Migration_Google_Drive')) {
             $access_token = $options[self::$accesstoken_key];
             if( empty( $googledrive_client_id ) || empty( $googledrive_client_secret ) || ( empty( $access_token ))) {
                 return false;
-            } 
+            }
+
+            // Validate the stored token shape before handing it to the Google
+            // client - a malformed/legacy token (missing 'access_token') would
+            // otherwise throw an uncaught InvalidArgumentException on every
+            // admin page load and take the whole site down.
+            $token_for_check = $access_token;
+            if (is_string($token_for_check)) {
+                $decoded = json_decode($token_for_check, true);
+                $token_for_check = (null !== $decoded) ? $decoded : array('access_token' => $token_for_check);
+            }
+            if (!is_array($token_for_check) || empty($token_for_check['access_token'])) {
+                Webtoffe_logger::write_log('GoogleDrive', 'Stored Google Drive access token is malformed/legacy and cannot be used. Clearing it - please reconnect Google Drive from the plugin settings.');
+                $options[self::$accesstoken_key] = '';
+                $this->accesstoken = '';
+                Wp_Migration_Duplicator::update_webtoffee_migrator_option($options);
+                return false;
+            }
+
             $client = $this->get_client();
             if( !$client) {
                 return false;
             }
-            $client->setAccessToken($access_token);
-            if ($client->isAccessTokenExpired()) {
-                if ($client->getRefreshToken()) {
-                   $token = $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-                   if( isset( $token )) {
-                    $options[self::$accesstoken_key] = $token;
-                    $this->accesstoken = $token;
-                    Wp_Migration_Duplicator::update_webtoffee_migrator_option($options);
-                   }
-                } else {
-                    return false;
+
+            try {
+                $client->setAccessToken($access_token);
+                if ($client->isAccessTokenExpired()) {
+                    if ($client->getRefreshToken()) {
+                       $token = $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+                       if ( is_array($token) && !empty($token['access_token']) ) {
+                            // Google's refresh response omits refresh_token when
+                            // reusing the same one - preserve the existing
+                            // refresh_token if the new response didn't include one,
+                            // otherwise the next refresh would have nothing to use.
+                            if ( empty( $token['refresh_token'] ) && ! empty( $token_for_check['refresh_token'] ) ) {
+                                $token['refresh_token'] = $token_for_check['refresh_token'];
+                            }
+                            $options[self::$accesstoken_key] = $token;
+                            $this->accesstoken = $token;
+                            Wp_Migration_Duplicator::update_webtoffee_migrator_option($options);
+                       } else {
+                            // Refresh failed (e.g. Google returned a transient
+                            // {"error":"internal_failure"} style response) - do NOT
+                            // overwrite the existing stored token, or the working
+                            // refresh_token inside it is permanently lost and the
+                            // account can only be fixed by a full manual reconnect.
+                            $error_detail = is_array($token) && isset($token['error']) ? $token['error'] : 'unknown error';
+                            Webtoffe_logger::write_log('GoogleDrive', "Google Drive token refresh failed ($error_detail). Keeping existing stored token and will retry on next request.");
+                            return false;
+                       }
+                    } else {
+                        return false;
+                    }
                 }
+            } catch (\Exception $e) {
+                // Never let a bad/expired token bring down the whole admin area.
+                Webtoffe_logger::write_log('GoogleDrive', 'Google Drive authentication failed: ' . $e->getMessage() . '. Clearing stored token - please reconnect Google Drive from the plugin settings.');
+                $options[self::$accesstoken_key] = '';
+                $this->accesstoken = '';
+                Wp_Migration_Duplicator::update_webtoffee_migrator_option($options);
+                return false;
             }
+
             return $client;
         }
         /**

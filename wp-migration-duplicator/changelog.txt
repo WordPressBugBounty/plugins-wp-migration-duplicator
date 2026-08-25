@@ -1,5 +1,12 @@
 == Changelog ==
 
+= 1.6.0  2026-08-25 =
+* [Fix] - Corrected translation function usage in several strings
+* [Fix] - Automatically detects and flattens extra wrapper folders in backup ZIPs during import
+* [Fix] - Preserved the existing Google Drive token when a refresh fails due to a temporary Google error.
+* [Fix] - Added missing FTP/SFTP profile columns during upgrades to prevent database errors.
+* Tested OK with WordPress 7.1
+
 = 1.5.9  2025-03-30 =
 * Tested OK with WordPress 7.0
 

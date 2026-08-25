@@ -1122,8 +1122,8 @@ msgstr "WordPress Migrator"
 #~ "Richten Sie Ihr Amazon S3-Profil für die Verwendung beim Import / Export "
 #~ "ein und authentifizieren Sie es"
 
-#~ msgid "Wordpress mported successfully"
-#~ msgstr "Wordpress wurde erfolgreich importiert"
+#~ msgid "WordPress mported successfully"
+#~ msgstr "WordPress wurde erfolgreich importiert"
 
 #~ msgid "Review"
 #~ msgstr "Bewertung"

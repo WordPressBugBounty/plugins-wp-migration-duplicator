@@ -119,25 +119,30 @@ class Wp_Migration_Duplicator_Activator {
         $tb='wt_mgdp_ftp';
         $like = '%'.$wpdb->prefix.$tb.'%';
         $table_name = $wpdb->prefix.$tb;
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching    
-        if(!$wpdb->get_results($wpdb->prepare($search_query, $like), ARRAY_N)) {
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
-                  $sql_settings = "CREATE TABLE IF NOT EXISTS `$table_name` (
-                                      `id` INT NOT NULL AUTO_INCREMENT, 
-                                      `name` VARCHAR(255) NOT NULL, 
-                                      `server` VARCHAR(255) NOT NULL, 
-                                      `user_name` VARCHAR(255) NOT NULL, 
-                                      `password` VARCHAR(255) NOT NULL, 
-                                      `port` INT NOT NULL DEFAULT '21',
-                      `ftps` INT NOT NULL DEFAULT '0', 
-                                      `is_sftp` INT NOT NULL DEFAULT '0', 
-                                      `passive_mode` INT NOT NULL DEFAULT '0',
-                                      `export_path` VARCHAR(255) NOT NULL, 
-                                      `import_path` VARCHAR(255) NOT NULL,
-                                      PRIMARY KEY (`id`)
-                              ) DEFAULT CHARSET=utf8;";
-                  dbDelta($sql_settings);
-              }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
+        // NOTE: dbDelta() is intentionally called unconditionally here (not
+        // gated behind a "table already exists" check) - dbDelta() is built
+        // to diff an existing table's schema and ALTER it to add any missing
+        // columns. Skipping it whenever the table already exists (as the
+        // other tables below still do) means new columns added to this
+        // table in later plugin versions (e.g. `ftps`, `is_sftp`,
+        // `passive_mode`) never get created on sites upgrading from a
+        // version that predates them.
+        $sql_settings = "CREATE TABLE `$table_name` (
+                                  `id` INT NOT NULL AUTO_INCREMENT, 
+                                  `name` VARCHAR(255) NOT NULL, 
+                                  `server` VARCHAR(255) NOT NULL, 
+                                  `user_name` VARCHAR(255) NOT NULL, 
+                                  `password` VARCHAR(255) NOT NULL, 
+                                  `port` INT NOT NULL DEFAULT '21',
+                  `ftps` INT NOT NULL DEFAULT '0', 
+                                  `is_sftp` INT NOT NULL DEFAULT '0', 
+                                  `passive_mode` INT NOT NULL DEFAULT '0',
+                                  `export_path` VARCHAR(255) NOT NULL, 
+                                  `import_path` VARCHAR(255) NOT NULL,
+                                  PRIMARY KEY (`id`)
+                          ) DEFAULT CHARSET=utf8;";
+              dbDelta($sql_settings);
         
         
         

@@ -3,9 +3,9 @@ Contributors: webtoffee
 Donate link: https://www.webtoffee.com/plugins
 Tags:  wordpress backup, wordpress restore, wordpress migration, database restore, cloud backup
 Requires at least: 3.3
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 5.6
-Stable tag: 1.5.9
+Stable tag: 1.6.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -21,7 +21,7 @@ You can backup to cloud (Amazon S3, Google Drive) and external storage locations
 
 = WebToffee WP Backup and Migration Plugin - features =
 
-&#128312;  <strong>Ease of use:</strong> Migrate all your Wordpress data (media files, plugins, themes, and database) with minimal clicks.
+&#128312;  <strong>Ease of use:</strong> Migrate all your WordPress data (media files, plugins, themes, and database) with minimal clicks.
 &#128312;  <strong>One-click backup and restore:</strong> Supports single-click backup and restore.
 &#128312;<strong> No data size limit for migration:</strong> Backup and restore WordPress site's of any size effortlessly.
 &#128312; <strong>Supports all hosts or operating system:</strong> There is no limitation on host and operating system for migration.
@@ -118,13 +118,19 @@ Yes. You can migrate your WordPress site between any hosts with the plugin.
 
 == Changelog ==
 
-= 1.5.9  2026-03-30 =
-* Tested OK with WordPress 7.0
-
+= 1.6.0 2026-08-25 =
+* [Fix] - Corrected translation function usage in several strings
+* [Fix] - Automatically detects and flattens extra wrapper folders in backup ZIPs during import
+* [Fix] - Preserved the existing Google Drive token when a refresh fails due to a temporary Google error.
+* [Fix] - Added missing FTP/SFTP profile columns during upgrades to prevent database errors.
+* Tested OK with WordPress 7.1
 
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-migration-duplicator/trunk/changelog.txt)
 
 == Upgrade notice ==
 
-= 1.5.9 =
-* Tested OK with WordPress 7.0
+= 1.6.0 =
+* [Fix] - Fixed translation issues and extra ZIP wrapper folders during import.
+* [Fix] - Preserved Google Drive tokens on refresh failures.
+* [Fix] - Added missing FTP/SFTP columns during upgrades.
+* Tested OK with WordPress 7.1

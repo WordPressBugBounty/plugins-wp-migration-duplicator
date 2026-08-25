@@ -108,7 +108,33 @@ class Wp_Migration_Duplicator {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+		$this->maybe_upgrade_db();
 
+	}
+
+	/**
+	 * Run the DB table install/upgrade routine whenever the plugin's stored
+	 * DB-schema version is behind the running code version.
+	 *
+	 * activate() (in Wp_Migration_Duplicator_Activator) only fires on a
+	 * fresh activation or an explicit deactivate/reactivate - WordPress
+	 * never calls it on a normal "Update" from the plugins list or on an
+	 * automatic background update. Without this check, schema changes
+	 * shipped in a plugin update (e.g. new columns added to wt_mgdp_ftp)
+	 * would never reach a site that simply updated the plugin files.
+	 *
+	 * @since 1.6.0
+	 */
+	private function maybe_upgrade_db() {
+		$installed_db_version = get_option( 'wt_mgdp_db_version', '' );
+		if ( $installed_db_version === $this->version ) {
+			return;
+		}
+		if ( ! class_exists( 'Wp_Migration_Duplicator_Activator' ) ) {
+			require_once WT_MGDP_PLUGIN_PATH . 'includes/class-wp-migration-duplicator-activator.php';
+		}
+		Wp_Migration_Duplicator_Activator::activate();
+		update_option( 'wt_mgdp_db_version', $this->version );
 	}
 
 	/**

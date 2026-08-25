@@ -15,14 +15,20 @@ if (!defined('WPINC')) {
 	}
 </style>
 <ul class="wf_sub_tab">
-	<li style="border-left:none; padding-left: 0px;" data-target="ftp-profiles"><a><?php esc_html_e('FTP profiles', 'wp-migration-duplicator'); ?></a></li>
+	<li style="border-left:none; padding-left: 0px;" data-target="ftp-profiles">
+		<a><?php esc_html_e('FTP profiles', 'wp-migration-duplicator'); ?></a></li>
 	<li data-target="add-new-ftp"><a><?php esc_html_e('Add new', 'wp-migration-duplicator'); ?></a></li>
 </ul>
-<div class="wf_sub_tab_container" style="  background: #ffffff; padding: 8px 20px 15px 20px;width:96.5%;border:none !important;box-shadow: 0px 2px 16px rgba(0, 0, 0, 0.1) !important;">
-	<div class="wf_sub_tab_content" data-id="add-new-ftp" style="display:block;  padding: 12px;" id="wp_mgdp_form_wrapper">
-		<h3 class="wt_mgdp_form_title" id="wt_mgdp_form_title"> <?php esc_html_e("Add new FTP profile", 'wp-migration-duplicator'); ?></h3>
+<div class="wf_sub_tab_container"
+	style="  background: #ffffff; padding: 8px 20px 15px 20px;width:96.5%;border:none !important;box-shadow: 0px 2px 16px rgba(0, 0, 0, 0.1) !important;">
+	<div class="wf_sub_tab_content" data-id="add-new-ftp" style="display:block;  padding: 12px;"
+		id="wp_mgdp_form_wrapper">
+		<h3 class="wt_mgdp_form_title" id="wt_mgdp_form_title">
+			<?php esc_html_e("Add new FTP profile", 'wp-migration-duplicator'); ?></h3>
 
-		<form method="post" action="<?php echo esc_url($_SERVER["REQUEST_URI"]); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated ?>" id="wt_mgdp_ftp_form">
+		<form method="post"
+			action="<?php echo esc_url($_SERVER["REQUEST_URI"]); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.InputNotValidated ?>"
+			id="wt_mgdp_ftp_form">
 			<input type="hidden" value="0" name="wt_mgdp_ftp_id" />
 			<input type="hidden" value="wp_mgdp_ftp_ajax" name="action" />
 			<input type="hidden" value="save_ftp" name="wt_mgdp_update_action" class="wt_mgdp_update_action" />
@@ -37,18 +43,22 @@ if (!defined('WPINC')) {
 					<th>
 						<label>
 							<?php esc_html_e("Profile name", 'wp-migration-duplicator'); ?>
-							<span class="wt-mgdp-tootip" data-wt-mgdp-tooltip="<?php esc_attr_e('You should begin by creating a Profile for each FTP server that you will be working with. The profile contains the necessary information to connect to the server.', 'wp-migration-duplicator'); ?>"><span class="wt-mgdp-tootip-icon"></span></span>
+							<span class="wt-mgdp-tootip"
+								data-wt-mgdp-tooltip="<?php esc_attr_e('You should begin by creating a Profile for each FTP server that you will be working with. The profile contains the necessary information to connect to the server.', 'wp-migration-duplicator'); ?>"><span
+									class="wt-mgdp-tootip-icon"></span></span>
 						</label>
 					</th>
 					<td>
-						<input type="text" name="wt_mgdp_profilename" placeholder="e.g. Demo FTP">
+						<input type="text" name="wt_mgdp_profilename" placeholder="<?php esc_attr_e( 'e.g. Demo FTP', 'wp-migration-duplicator' ) ?>">
 					</td>
 					<td></td>
 				</tr>
 				<tr>
 					<th><label>
 							<?php esc_html_e("FTP Server Host/IP", 'wp-migration-duplicator'); ?>
-							<span class="wt-mgdp-tootip" data-wt-mgdp-tooltip="<?php esc_attr_e('The host server is the FTP host to which the users want to connect using their respective login credentials.To get FTP host Login to the control panel of your website, the FTP address should be listed in the FTP account section of the control panel.', 'wp-migration-duplicator'); ?>"><span class="wt-mgdp-tootip-icon"></span></span>
+							<span class="wt-mgdp-tootip"
+								data-wt-mgdp-tooltip="<?php esc_attr_e('The host server is the FTP host to which the users want to connect using their respective login credentials.To get FTP host Login to the control panel of your website, the FTP address should be listed in the FTP account section of the control panel.', 'wp-migration-duplicator'); ?>"><span
+									class="wt-mgdp-tootip-icon"></span></span>
 						</label>
 					</th>
 					<td>
@@ -60,8 +70,10 @@ if (!defined('WPINC')) {
 					<th>
 						<label>
 							<?php esc_html_e("FTP User Name", 'wp-migration-duplicator'); ?>
-							<span class="wt-mgdp-tootip" data-wt-mgdp-tooltip="<?php esc_attr_e('The username created on activating FTP account', 'wp-migration-duplicator'); ?>"><span class="wt-mgdp-tootip-icon"></span></span>
-							
+							<span class="wt-mgdp-tootip"
+								data-wt-mgdp-tooltip="<?php esc_attr_e('The username created on activating FTP account', 'wp-migration-duplicator'); ?>"><span
+									class="wt-mgdp-tootip-icon"></span></span>
+
 						</label>
 					</th>
 					<td>
@@ -70,7 +82,10 @@ if (!defined('WPINC')) {
 					<td></td>
 				</tr>
 				<tr>
-					<th><label><?php esc_html_e("FTP Password", 'wp-migration-duplicator'); ?><span class="wt-mgdp-tootip" data-wt-mgdp-tooltip="<?php esc_html_e('The password you set up when you activated your FTP account.', 'wp-migration-duplicator'); ?>"><span class="wt-mgdp-tootip-icon"></span></span></label></th>
+					<th><label><?php esc_html_e("FTP Password", 'wp-migration-duplicator'); ?><span
+								class="wt-mgdp-tootip"
+								data-wt-mgdp-tooltip="<?php esc_html_e('The password you set up when you activated your FTP account.', 'wp-migration-duplicator'); ?>"><span
+									class="wt-mgdp-tootip-icon"></span></span></label></th>
 					<td>
 						<input type="password" name="wt_mgdp_ftppassword" autocomplete="off">
 					</td>
@@ -80,8 +95,10 @@ if (!defined('WPINC')) {
 					<th>
 						<label>
 							<?php esc_html_e("FTP Port", 'wp-migration-duplicator'); ?>
-							<span class="wt-mgdp-tootip" data-wt-mgdp-tooltip="<?php esc_attr_e('Port number to establish FTP connection. Default port number: 21', 'wp-migration-duplicator'); ?>"><span class="wt-mgdp-tootip-icon"></span></span>
-							
+							<span class="wt-mgdp-tootip"
+								data-wt-mgdp-tooltip="<?php esc_attr_e('Port number to establish FTP connection. Default port number: 21', 'wp-migration-duplicator'); ?>"><span
+									class="wt-mgdp-tootip-icon"></span></span>
+
 						</label>
 					</th>
 					<td>
@@ -93,12 +110,15 @@ if (!defined('WPINC')) {
 					<th>
 						<label>
 							<?php esc_html_e("Default export path", 'wp-migration-duplicator'); ?>
-							<span class="wt-mgdp-tootip" data-wt-mgdp-tooltip="<?php esc_attr_e('Specify a server directory to store the backup files. The specified directory must exist on the server.', 'wp-migration-duplicator'); ?>"><span class="wt-mgdp-tootip-icon"></span></span>
+							<span class="wt-mgdp-tootip"
+								data-wt-mgdp-tooltip="<?php esc_attr_e('Specify a server directory to store the backup files. The specified directory must exist on the server.', 'wp-migration-duplicator'); ?>"><span
+									class="wt-mgdp-tootip-icon"></span></span>
 						</label>
 					</th>
 					<td>
 						<input type="text" name="wt_mgdp_ftpexport_path" placeholder="e.g. /backups">
-						<span style="font-style: italic;font-size:12px;"><?php esc_html_e('Needs to already exist on the server','wp-migration-duplicator'); ?></span>
+						<span
+							style="font-style: italic;font-size:12px;"><?php esc_html_e('Needs to already exist on the server', 'wp-migration-duplicator'); ?></span>
 					</td>
 					<td></td>
 				</tr>
@@ -106,47 +126,51 @@ if (!defined('WPINC')) {
 					<th>
 						<label>
 							<?php esc_html_e("Default import path", 'wp-migration-duplicator'); ?>
-							<span class="wt-mgdp-tootip" data-wt-mgdp-tooltip="<?php esc_attr_e('Specify a server directory from where you want to import the backup. The specified directory must exist on the server.', 'wp-migration-duplicator'); ?>"><span class="wt-mgdp-tootip-icon"></span></span>
+							<span class="wt-mgdp-tootip"
+								data-wt-mgdp-tooltip="<?php esc_attr_e('Specify a server directory from where you want to import the backup. The specified directory must exist on the server.', 'wp-migration-duplicator'); ?>"><span
+									class="wt-mgdp-tootip-icon"></span></span>
 						</label>
 					</th>
 					<td>
 						<input type="text" step="1" name="wt_mgdp_ftpimport_path" value="" placeholder="e.g. /backups">
-						<span style="font-style: italic;font-size:12px;"><?php esc_html_e('Needs to already exist on the server','wp-migration-duplicator'); ?></span>
+						<span
+							style="font-style: italic;font-size:12px;"><?php esc_html_e('Needs to already exist on the server', 'wp-migration-duplicator'); ?></span>
 					</td>
 					<td></td>
 				</tr>
-                                
-                                
-                                <tr>
-					<th><label><?php esc_html_e("Use FTPS",'wp-migration-duplicator'); ?></label></th>
-					<td>
-						<input type="radio" name="wt_mgdp_useftps" class="" value="1"/> Yes &nbsp;&nbsp;
-                                                <input type="radio" name="wt_mgdp_useftps" class="" value="0" checked="checked"/> No &nbsp;&nbsp;<br/>
-                                                <span style="font-style: italic;font-size:12px;"><?php esc_html_e('Enable this send data over a network with SSL encryption','wp-migration-duplicator'); ?></span>
 
-        	        </td>
+
+				<tr>
+					<th><label><?php esc_html_e("Use FTPS", 'wp-migration-duplicator'); ?></label></th>
+					<td>
+						<input type="radio" name="wt_mgdp_useftps" class="" value="1" /> <?php echo esc_html__('Yes', 'wp-migration-duplicator'); ?> &nbsp;&nbsp;
+						<input type="radio" name="wt_mgdp_useftps" class="" value="0" checked="checked" /> <?php echo esc_html__('No', 'wp-migration-duplicator'); ?>
+						&nbsp;&nbsp;<br />
+						<span
+							style="font-style: italic;font-size:12px;"><?php esc_html_e('Enable this send data over a network with SSL encryption', 'wp-migration-duplicator'); ?></span>
+
+					</td>
 					<td></td>
 				</tr>
 				<tr>
-					<th><label><?php esc_html_e("Enable Passive mode",'wp-migration-duplicator'); ?></label></th>
+					<th><label><?php esc_html_e("Enable Passive mode", 'wp-migration-duplicator'); ?></label></th>
 					<td>
-						<input type="radio" name="wt_mgdp_passivemode" class="" value="1"/> Yes &nbsp;&nbsp;
-                                                <input type="radio" name="wt_mgdp_passivemode" class="" value="0" checked="checked"/> No &nbsp;&nbsp;<br>
-                                                <span style="font-style: italic;font-size:12px;"><?php esc_html_e('Enable this to turns passive mode on or off','wp-migration-duplicator'); ?></span>
-        	        </td>
+						<input type="radio" name="wt_mgdp_passivemode" class="" value="1" /> <?php echo esc_html__('Yes', 'wp-migration-duplicator'); ?> &nbsp;&nbsp;
+						<input type="radio" name="wt_mgdp_passivemode" class="" value="0" checked="checked" /> <?php echo esc_html__('No', 'wp-migration-duplicator'); ?>
+						&nbsp;&nbsp;<br>
+						<span
+							style="font-style: italic;font-size:12px;"><?php esc_html_e('Enable this to turns passive mode on or off', 'wp-migration-duplicator'); ?></span>
+					</td>
 					<td></td>
 				</tr>
 				<tr>
-					<th><label><?php esc_html_e("Is SFTP",'wp-migration-duplicator'); ?></label></th>
+					<th><label><?php esc_html_e("Is SFTP", 'wp-migration-duplicator'); ?></label></th>
 					<td>
-						<input type="radio" name="wt_mgdp_is_sftp" class="" value="1"> Yes &nbsp;&nbsp;
-						<input type="radio" name="wt_mgdp_is_sftp" class="" value="0" checked="checked"> No &nbsp;&nbsp;
-        	        </td>
+						<input type="radio" name="wt_mgdp_is_sftp" class="" value="1"> <?php echo esc_html__('Yes', 'wp-migration-duplicator'); ?> &nbsp;&nbsp;
+						<input type="radio" name="wt_mgdp_is_sftp" class="" value="0" checked="checked"> <?php echo esc_html__('No', 'wp-migration-duplicator'); ?> &nbsp;&nbsp;
+					</td>
 					<td></td>
 				</tr>
-
-
-
 			</table>
 			<?php
 			$settings_button_title = __('Save settings', 'wp-migration-duplicator');
@@ -159,7 +183,8 @@ if (!defined('WPINC')) {
 		$checked = (filter_var($is_enabled, FILTER_VALIDATE_BOOLEAN)) ? 'checked=checked' : '';
 		?>
 		<h3><?php esc_html_e("FTP/SFTP settings", 'wp-migration-duplicator'); ?></h3>
-		<p><?php esc_html_e('Create and maintain multiple FTP/SFTP profiles that can be used for the import-export operations of your site backups.','wp-migration-duplicator');?></p>
+		<p><?php esc_html_e('Create and maintain multiple FTP/SFTP profiles that can be used for the import-export operations of your site backups.', 'wp-migration-duplicator'); ?>
+		</p>
 		<div class="wt_mgdp_ftp_list">
 			<div class="wp_migration_duplicator_ftp_list"></div>
 		</div>

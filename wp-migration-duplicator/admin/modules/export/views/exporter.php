@@ -49,8 +49,8 @@ $cron_settings_data = get_option('wt_mgdp_cron_settings', null);
 $cron_action = '';
 $cron_acion_delete = '';
 if ($cron_settings_data) {
-    $cron_action = '<a name = "wt_mgdp_schedule_export_btn_edit" style="cursor:pointer;">   Edit</a> ';
-    $cron_acion_delete = '<a name = "wt_mgdp_schedule_export_delete" style="cursor:pointer;">   Delete</a>';
+    $cron_action = '<a name = "wt_mgdp_schedule_export_btn_edit" style="cursor:pointer;">   ' . esc_html__('Edit', 'wp-migration-duplicator') . '</a> ';
+    $cron_acion_delete = '<a name = "wt_mgdp_schedule_export_delete" style="cursor:pointer;">   ' . esc_html__('Delete', 'wp-migration-duplicator') . '</a>';
 }
 ?>
 <style type="text/css">
@@ -326,8 +326,10 @@ height: 20px;
                                             <!-- select all boxes -->
                                             <tr>
                                                 <td style="padding: 10px;">
-                                                    <a href="#" name = "usrselectall_def" id="usrselectall_def" onclick="return false;" ><?php esc_html_e('Select all', 'wp-migration-duplicator') ?></a> &nbsp;/&nbsp;
-                                                    <a href="#" id="usrunselectall_def" name = "usrunselectall_def" onclick="return false;"><?php esc_html_e('Unselect all', 'wp-migration-duplicator') ?></a>
+                                                    <label class="wt_mgdp_select_all_label">
+                                                        <input type="checkbox" name="usrselectall_toggle_def" id="usrselectall_toggle_def" checked="checked" />
+                                                        <?php esc_html_e('Select all', 'wp-migration-duplicator') ?>
+                                                    </label>
                                                 </td>
                                             </tr>
                                         </table>
@@ -440,11 +442,10 @@ height: 20px;
                                                 <label><?php esc_html_e('Start time','wp-migration-duplicator'); ?></label> 
                                                 <div style="float:left">
                                                     <input  type="number" step="1" min="1" max="12" name="wt_mgdp_cron_start_val" value=<?php echo esc_attr($hour) ?> />
-                                                    <span class="wt-iew_form_help" style="display:block; margin: 1px 2px 2px 4px;">Hour</span>
-                                                </div>&nbsp&nbsp
+                                                    <span class="wt-iew_form_help" style="display:block; margin: 1px 2px 2px 4px;"><?php esc_html_e('Hour', 'wp-migration-duplicator'); ?></span>                                                </div>&nbsp&nbsp
                                                 <div style="float:left">
                                                     <span class="wt_mgdp_cron_start_val_min">:</span><input type="number" step="1" min="0" max="59" name="wt_mgdp_cron_start_val_min" value=<?php echo esc_attr($min) ?> onchange="if(parseInt(this.value,10)<10)this.value='0'+this.value;" />
-                                                                                                            <span class="wt-iew_form_help" style="display:block;  margin: 1px 2px 2px 8px;">Minute</span>
+                                                    <span class="wt-iew_form_help" style="display:block;  margin: 1px 2px 2px 8px;"><?php esc_html_e('Minute', 'wp-migration-duplicator'); ?></span>
                                                 </div>&nbsp&nbsp
                                                 <div style="float:left">
                                                     <select name="wt_mgdp_cron_start_ampm_val">
@@ -487,8 +488,10 @@ height: 20px;
                                         <!-- select all boxes -->
                                         <tr>
                                             <td>
-                                                <a href="#" name = "usrselectall" id="usrselectall" onclick="return false;" ><?php esc_html_e('Select all', 'wp-migration-duplicator') ?></a> &nbsp;/&nbsp;
-                                                <a href="#" id="usrunselectall" name = "usrunselectall" onclick="return false;"><?php esc_html_e('Unselect all', 'wp-migration-duplicator') ?></a>
+                                                <label class="wt_mgdp_select_all_label">
+                                                    <input type="checkbox" name="usrselectall_toggle" id="usrselectall_toggle" checked="checked" />
+                                                    <?php esc_html_e('Select all', 'wp-migration-duplicator') ?>
+                                                </label>
                                             </td>
                                         </tr>
                                     </table>
