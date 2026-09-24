@@ -180,7 +180,12 @@ class Wp_Migration_Duplicator_Export
                 if(file_exists($log_file_name)){
                     unlink($log_file_name);
                 }
-                
+                // Delete all database export fragments to prevent credential exposure after an aborted export.
+                $wt_mgdp_db_dir = Wp_Migration_Duplicator::$database_dir;
+                if ( is_dir( $wt_mgdp_db_dir ) ) {
+                    Wp_Migration_Duplicator::wt_mgt_delete_files( $wt_mgdp_db_dir );
+                }
+
 		//update log status
 		$to_db_where_arr = array('id_wtmgdp_log' => isset($_POST['export_id']) ? absint($_POST['export_id']) : 0); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		Wp_Migration_Duplicator::delete_log($to_db_where_arr);
@@ -299,6 +304,20 @@ class Wp_Migration_Duplicator_Export
 					fwrite($fh, '<?php // Silence is golden'); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 				}
 				fclose($fh); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+				// Deny direct HTTP access (Apache + IIS). Nginx: exposure window closed via cleanup on Stop/completion.
+				$wt_mgdp_htfiles = array(
+					'.htaccess'  => 'deny from all',
+					'web.config' => '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<configuration><system.webServer><security><requestFiltering><denyUrlSequences><add sequence=".sql"/></denyUrlSequences></requestFiltering></security></system.webServer></configuration>',
+				);
+				foreach ( $wt_mgdp_htfiles as $wt_mgdp_htfile => $wt_mgdp_htcontent ) {
+					if ( ! file_exists( $database_directory . '/' . $wt_mgdp_htfile ) ) {
+						$wt_mgdp_htfh = @fopen( $database_directory . '/' . $wt_mgdp_htfile, 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+						if ( is_resource( $wt_mgdp_htfh ) ) {
+							fwrite( $wt_mgdp_htfh, $wt_mgdp_htcontent ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+							fclose( $wt_mgdp_htfh ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+						}
+					}
+				}
 			}
 		}
                 Webtoffe_logger::write_log( 'Export','Database backup directory successfully created' );
@@ -746,8 +765,25 @@ class Wp_Migration_Duplicator_Export
                     $directory_status = true;
                     if (!is_dir($database_directory)) {
                             $oldmask = umask(0);
-                            $directory_status = mkdir($database_directory, 0777); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
+                            $directory_status = mkdir($database_directory, 0755); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
                             umask($oldmask);
+                            if ( $directory_status ) {
+                                    // Deny direct HTTP access (Apache + IIS).
+                                    $wt_mgdp_db_htfiles = array(
+                                            '.htaccess'  => 'deny from all',
+                                            'index.php'  => '<?php // Silence is golden',
+                                            'web.config' => '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<configuration><system.webServer><security><requestFiltering><denyUrlSequences><add sequence=".sql"/></denyUrlSequences></requestFiltering></security></system.webServer></configuration>',
+                                    );
+                                    foreach ( $wt_mgdp_db_htfiles as $wt_mgdp_dbf => $wt_mgdp_dbc ) {
+                                            if ( ! file_exists( $database_directory . '/' . $wt_mgdp_dbf ) ) {
+                                                    $wt_mgdp_dbfh = @fopen( $database_directory . '/' . $wt_mgdp_dbf, 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+                                                    if ( is_resource( $wt_mgdp_dbfh ) ) {
+                                                            fwrite( $wt_mgdp_dbfh, $wt_mgdp_dbc ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+                                                            fclose( $wt_mgdp_dbfh ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+                                                    }
+                                            }
+                                    }
+                            }
                     }
                     if ($directory_status) {
                             $fwrite_mode = ($offset == 0 ? "w" : "a");

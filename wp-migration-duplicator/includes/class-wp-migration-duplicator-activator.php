@@ -79,7 +79,29 @@ class Wp_Migration_Duplicator_Activator {
                     fclose($fh);
                 }
             }
-        }    
+        }
+
+		// Also secure the database export temp directory if it exists (covers upgrades from <= 1.6.0).
+		$db_dir = Wp_Migration_Duplicator::$database_dir;
+		if ( is_dir( $db_dir ) ) {
+			$db_files_to_create = array(
+				'.htaccess'  => 'deny from all',
+				'index.php'  => '<?php // Silence is golden',
+				'web.config' => '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<configuration><system.webServer><security><requestFiltering><denyUrlSequences><add sequence=".sql"/></denyUrlSequences></requestFiltering></security></system.webServer></configuration>',
+			);
+			foreach ( $db_files_to_create as $file => $file_content ) {
+				if ( ! file_exists( $db_dir . '/' . $file ) ) {
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+					$fh = @fopen( $db_dir . '/' . $file, 'w' );
+					if ( is_resource( $fh ) ) {
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+						fwrite( $fh, $file_content );
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+						fclose( $fh );
+					}
+				}
+			}
+		}
     }
 
 	/**

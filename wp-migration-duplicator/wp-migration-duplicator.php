@@ -12,7 +12,7 @@
  * Plugin Name:       WebToffee WP Backup and Migration
  * Plugin URI:        https://wordpress.org/plugins/wp-migration-duplicator/
  * Description:       Migrate WordPress contents and database quickly with ease.
- * Version:           1.6.0
+ * Version:           1.6.1
  * Author:            WebToffee
  * Author URI:        https://www.webtoffee.com/
  * License:           GPL-3.0+
@@ -40,11 +40,36 @@ if(!defined('WP_MIGRATION_DUPLICATOR_VERSION')) //check plugin file already incl
     /**
      * Currently plugin version.
      */
-    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.6.0' );
+    define('WP_MIGRATION_DUPLICATOR_VERSION', '1.6.1' );
 }
 if ( !defined( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT' ) ) {
 	define( 'WT_MGDP_PLUGIN_DEBUG_BASIC_TROUBLESHOOT', 'https://www.webtoffee.com/finding-php-error-logs-in-migrator-plugin/' );
 }
+
+/**
+ * One-time cleanup of orphan database export SQL fragments left by <= 1.6.0.
+ *
+ * Runs on admin_init so the Wp_Migration_Duplicator class is guaranteed loaded.
+ * Guarded against running during an active export via wp_mgdp_log_id option.
+ */
+function wt_mgdp_run_security_cleanup_1_6_1() {
+	if ( get_option( 'wt_mgdp_security_cleanup_done' ) ) {
+		return;
+	}
+	// Skip if an export is currently in progress.
+	if ( ! empty( get_option( 'wp_mgdp_log_id' ) ) ) {
+		return;
+	}
+	if ( ! class_exists( 'Wp_Migration_Duplicator' ) ) {
+		return;
+	}
+	$wt_mgdp_db_dir = Wp_Migration_Duplicator::$database_dir;
+	if ( is_dir( $wt_mgdp_db_dir ) ) {
+		Wp_Migration_Duplicator::wt_mgt_delete_files( $wt_mgdp_db_dir );
+	}
+	update_option( 'wt_mgdp_security_cleanup_done', '1.6.1', true );
+}
+add_action( 'admin_init', 'wt_mgdp_run_security_cleanup_1_6_1' );
 
 /**
  * The code that runs during plugin activation.

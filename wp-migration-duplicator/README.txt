@@ -5,7 +5,7 @@ Tags:  wordpress backup, wordpress restore, wordpress migration, database restor
 Requires at least: 3.3
 Tested up to: 7.1
 Requires PHP: 5.6
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -118,19 +118,12 @@ Yes. You can migrate your WordPress site between any hosts with the plugin.
 
 == Changelog ==
 
-= 1.6.0 2026-08-25 =
-* [Fix] - Corrected translation function usage in several strings
-* [Fix] - Automatically detects and flattens extra wrapper folders in backup ZIPs during import
-* [Fix] - Preserved the existing Google Drive token when a refresh fails due to a temporary Google error.
-* [Fix] - Added missing FTP/SFTP profile columns during upgrades to prevent database errors.
-* Tested OK with WordPress 7.1
+= 1.6.1 2026-09-24 =
+* [Security] - Vulnerability fix. Hardened database export handling. Credit: c4st1e via Patchstack.
 
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-migration-duplicator/trunk/changelog.txt)
 
 == Upgrade notice ==
 
-= 1.6.0 =
-* [Fix] - Fixed translation issues and extra ZIP wrapper folders during import.
-* [Fix] - Preserved Google Drive tokens on refresh failures.
-* [Fix] - Added missing FTP/SFTP columns during upgrades.
-* Tested OK with WordPress 7.1
+= 1.6.1 =
+* [Security] - Vulnerability fix. Hardened database export handling. Credit: c4st1e via Patchstack.
