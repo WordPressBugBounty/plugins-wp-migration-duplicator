@@ -1,9 +1,12 @@
 == Changelog ==
 
-= 1.6.1  2026-09-24 =
+= 1.6.2  2026-11-05 =
+* [Security] - SQL injection vulnerability fix. Hardened user profile biography handling. Credit: zickzick2 via Wordfence.
+
+= 1.6.1  2026-09-15 =
 * [Security] - Vulnerability fix. Hardened database export handling. Credit: c4st1e via Patchstack.
 
-= 1.6.0  2026-08-25 =
+= 1.6.0  2026-08-24 =
 * [Fix] - Corrected translation function usage in several strings
 * [Fix] - Automatically detects and flattens extra wrapper folders in backup ZIPs during import
 * [Fix] - Preserved the existing Google Drive token when a refresh fails due to a temporary Google error.

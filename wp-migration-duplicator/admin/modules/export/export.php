@@ -950,7 +950,7 @@ class Wp_Migration_Duplicator_Export
                     
                   //$row[$j] = $this->webtoffee_serialize($find, $replace, $row[$j]); 
 				  if(null !== $row[$j]){
-                  $row[$j] = addslashes($row[$j]);
+                  $row[$j] = $mysqli->real_escape_string($row[$j]); // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_real_escape_string
 				  }
 
                   if (isset($row[$j])) 

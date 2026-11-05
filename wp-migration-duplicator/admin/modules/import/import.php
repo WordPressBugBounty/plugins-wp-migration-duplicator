@@ -338,6 +338,14 @@ class Wp_Migration_Duplicator_Import
                                 $templine = str_replace(',;/*END*/', ';/*END*/', $templine);
                             }
                             $templine = trim($templine);
+                            // Refuse to execute if buffer has an unmatched double-quote (mid-string injection guard).
+                            $unescaped_check = str_replace( '\\"', '', $templine );
+                            if ( 0 !== substr_count( $unescaped_check, '"' ) % 2 ) {
+                                $error_count++;
+                                Webtoffe_logger::write_log( 'Import', 'Skipped query with unmatched quote in ' . $filename );
+                                $templine = '';
+                                continue;
+                            }
                             // Perform the query
                             if (!mysqli_query($connection, trim($templine))) { // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query
                                 $error_count++;
